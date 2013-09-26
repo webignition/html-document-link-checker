@@ -37,11 +37,15 @@ abstract class BaseTest extends \PHPUnit_Framework_TestCase {
      * 
      * @param array $httpMessages
      */
-    protected function loadHttpFixtures($httpMessages) {
+    protected function loadHttpClientFixtures($items) {
         $plugin = new \Guzzle\Plugin\Mock\MockPlugin();
         
-        foreach ($httpMessages as $httpMessage) {            
-            $plugin->addResponse(\Guzzle\Http\Message\Response::fromMessage($httpMessage));
+        foreach ($items as $item) {
+            if ($item instanceof \Exception) {
+                $plugin->addException($item);
+            } elseif (is_string($item)) {
+                $plugin->addResponse(\Guzzle\Http\Message\Response::fromMessage($item));
+            }
         }
         
         $this->getHttpClient()->addSubscriber($plugin);

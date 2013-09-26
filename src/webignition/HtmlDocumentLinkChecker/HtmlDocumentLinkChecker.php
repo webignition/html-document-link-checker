@@ -75,10 +75,27 @@ class HtmlDocumentLinkChecker {
      * @return array
      */
     public function getLinksByHttpState($statusCode) {
+        return $this->getLinksByLinkState(new LinkState(LinkState::TYPE_HTTP, $statusCode));       
+    }
+    
+    /**
+     * 
+     * @param int $statusCode
+     * @return array
+     */    
+    public function getLinksByCurlState($curlCode) {
+        return $this->getLinksByLinkState(new LinkState(LinkState::TYPE_CURL, $curlCode));       
+    }
+
+    
+    /**
+     * 
+     * @param \webignition\HtmlDocumentLinkChecker\LinkState $comparator
+     * @return array
+     */
+    private function getLinksByLinkState(LinkState $comparator) {
         $linkStates = $this->getLinkStates();
         $links = array();
-        
-        $comparator = new LinkState(LinkState::TYPE_HTTP, $statusCode);
         
         foreach ($linkStates as $url => $linkState) {
             /* @var $linkState LinkState */
@@ -88,7 +105,7 @@ class HtmlDocumentLinkChecker {
             }
         }
         
-        return $links;
+        return $links;          
     }
     
     
@@ -110,13 +127,18 @@ class HtmlDocumentLinkChecker {
         
         foreach ($linkFinder->getUrls() as $url) {
             $request = $this->getHttpClient()->head($url);
+
             try {
-                $response = $request->send();
-            } catch (\Guzzle\Http\Exception\BadResponseException $badResponseException) {
-                $response = $badResponseException->getResponse();
+                try {
+                    $response = $request->send();
+                } catch (\Guzzle\Http\Exception\BadResponseException $badResponseException) {
+                    $response = $badResponseException->getResponse();
+                }           
+
+                $this->linkStates[$url] = new LinkState(LinkState::TYPE_HTTP, $response->getStatusCode());                
+            } catch (\Guzzle\Http\Exception\CurlException $curlException) {
+                $this->linkStates[$url] = new LinkState(LinkState::TYPE_CURL, $curlException->getErrorNo());
             }
-            
-            $this->linkStates[$url] = new LinkState('http', $response->getStatusCode());
         }
     }
     

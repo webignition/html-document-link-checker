@@ -5,13 +5,13 @@ namespace webignition\HtmlDocumentLinkChecker\Tests;
 use webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker;
 use webignition\WebResource\WebPage\WebPage;
 
-class GetLinksByHttpStateTest extends BaseTest {
+class GetLinksByCurlStateTest extends BaseTest {
     
     public function testWithNoWebPage() {
         $checker = new HtmlDocumentLinkChecker();        
-        $this->assertEquals(array(), $checker->getLinksByHttpState(200));     
-        $this->assertEquals(array(), $checker->getLinksByHttpState(404));     
-        $this->assertEquals(array(), $checker->getLinksByHttpState(500));     
+        $this->assertEquals(array(), $checker->getLinksByCurlState(6));     
+        $this->assertEquals(array(), $checker->getLinksByCurlState(28));     
+        $this->assertEquals(array(), $checker->getLinksByCurlState(55));     
     }
     
     public function testWithNoLinks() {
@@ -22,21 +22,24 @@ class GetLinksByHttpStateTest extends BaseTest {
         $checker = new HtmlDocumentLinkChecker();
         $checker->setWebPage($webPage);
         
-        $this->assertEquals(array(), $checker->getLinksByHttpState(200));     
-        $this->assertEquals(array(), $checker->getLinksByHttpState(404));     
-        $this->assertEquals(array(), $checker->getLinksByHttpState(500));
+        $this->assertEquals(array(), $checker->getLinksByCurlState(6));     
+        $this->assertEquals(array(), $checker->getLinksByCurlState(28));     
+        $this->assertEquals(array(), $checker->getLinksByCurlState(55));
     }
     
-    public function testWithAll200() {
+    public function testWithAll6() {
+        $curlException = new \Guzzle\Http\Exception\CurlException();
+        $curlException->setError('Couldn\'t resolve host. The given remote host was not resolved.', 6);
+        
         $this->loadHttpClientFixtures(array(
-            'HTTP/1.1 200 OK',
-            'HTTP/1.1 200 OK',
-            'HTTP/1.1 200 OK',
-            'HTTP/1.1 200 OK',
-            'HTTP/1.1 200 OK',
-            'HTTP/1.1 200 OK',
-            'HTTP/1.1 200 OK',
-            'HTTP/1.1 200 OK'
+            $curlException,
+            $curlException,
+            $curlException,
+            $curlException,
+            $curlException,
+            $curlException,
+            $curlException,
+            $curlException
         ));
         
         $webPage = new WebPage();
@@ -46,9 +49,9 @@ class GetLinksByHttpStateTest extends BaseTest {
         $checker = new HtmlDocumentLinkChecker();
         $checker->setWebPage($webPage);
         $checker->setHttpClient($this->getHttpClient());
-
-        $this->assertEquals(array(), $checker->getLinksByHttpState(404));         
-        $this->assertEquals(array(), $checker->getLinksByHttpState(500));
+   
+        $this->assertEquals(array(), $checker->getLinksByCurlState(28));     
+        $this->assertEquals(array(), $checker->getLinksByCurlState(55));
         
         $this->assertEquals(array(
             'http://example.com/relative-path',
@@ -59,19 +62,22 @@ class GetLinksByHttpStateTest extends BaseTest {
             'http://www.youtube.com/example',
             'http://blog.example.com/',
             'http://twitter.com/example',
-        ), $checker->getLinksByHttpState(200));         
+        ), $checker->getLinksByCurlState(6));         
     }  
     
-    public function testWithAll404() {
+    public function testWithAll28() {
+        $curlException = new \Guzzle\Http\Exception\CurlException();
+        $curlException->setError('Operation timeout. The specified time-out period was reached according to the conditions.', 28);
+        
         $this->loadHttpClientFixtures(array(
-            'HTTP/1.1 404 Not Found',
-            'HTTP/1.1 404 Not Found',
-            'HTTP/1.1 404 Not Found',
-            'HTTP/1.1 404 Not Found',
-            'HTTP/1.1 404 Not Found',
-            'HTTP/1.1 404 Not Found',
-            'HTTP/1.1 404 Not Found',
-            'HTTP/1.1 404 Not Found'
+            $curlException,
+            $curlException,
+            $curlException,
+            $curlException,
+            $curlException,
+            $curlException,
+            $curlException,
+            $curlException
         ));
         
         $webPage = new WebPage();
@@ -82,8 +88,8 @@ class GetLinksByHttpStateTest extends BaseTest {
         $checker->setWebPage($webPage);
         $checker->setHttpClient($this->getHttpClient());
         
-        $this->assertEquals(array(), $checker->getLinksByHttpState(200));         
-        $this->assertEquals(array(), $checker->getLinksByHttpState(500));        
+        $this->assertEquals(array(), $checker->getLinksByCurlState(6));     
+        $this->assertEquals(array(), $checker->getLinksByCurlState(55)); 
         
         $this->assertEquals(array(
             'http://example.com/relative-path',
@@ -94,19 +100,22 @@ class GetLinksByHttpStateTest extends BaseTest {
             'http://www.youtube.com/example',
             'http://blog.example.com/',
             'http://twitter.com/example',
-        ), $checker->getLinksByHttpState(404));         
+        ), $checker->getLinksByCurlState(28));         
     } 
     
-    public function testWithAll503() {
+    public function testWithAll55() {
+        $curlException = new \Guzzle\Http\Exception\CurlException();
+        $curlException->setError('Failed sending network data.', 55);
+        
         $this->loadHttpClientFixtures(array(
-            'HTTP/1.1 503 Service Unavailable',
-            'HTTP/1.1 503 Service Unavailable',
-            'HTTP/1.1 503 Service Unavailable',
-            'HTTP/1.1 503 Service Unavailable',
-            'HTTP/1.1 503 Service Unavailable',
-            'HTTP/1.1 503 Service Unavailable',
-            'HTTP/1.1 503 Service Unavailable',
-            'HTTP/1.1 503 Service Unavailable'
+            $curlException,
+            $curlException,
+            $curlException,
+            $curlException,
+            $curlException,
+            $curlException,
+            $curlException,
+            $curlException
         ));
         
         $webPage = new WebPage();
@@ -117,8 +126,8 @@ class GetLinksByHttpStateTest extends BaseTest {
         $checker->setWebPage($webPage);
         $checker->setHttpClient($this->getHttpClient());
         
-        $this->assertEquals(array(), $checker->getLinksByHttpState(200));         
-        $this->assertEquals(array(), $checker->getLinksByHttpState(500));         
+        $this->assertEquals(array(), $checker->getLinksByCurlState(6));         
+        $this->assertEquals(array(), $checker->getLinksByCurlState(28));         
         
         $this->assertEquals(array(
             'http://example.com/relative-path',
@@ -129,20 +138,29 @@ class GetLinksByHttpStateTest extends BaseTest {
             'http://www.youtube.com/example',
             'http://blog.example.com/',
             'http://twitter.com/example',
-        ), $checker->getLinksByHttpState(503));         
+        ), $checker->getLinksByCurlState(55));         
     }
     
     
-    public function testWithVariedStatusCodes() {
+    public function testWithVariedCodes() {
+        $curl6Exception = new \Guzzle\Http\Exception\CurlException();
+        $curl6Exception->setError('Couldn\'t resolve host. The given remote host was not resolved.', 6);        
+        
+        $curl28Exception = new \Guzzle\Http\Exception\CurlException();
+        $curl28Exception->setError('Operation timeout. The specified time-out period was reached according to the conditions.', 28);        
+        
+        $curl55Exception = new \Guzzle\Http\Exception\CurlException();
+        $curl55Exception->setError('Failed sending network data.', 55);
+        
         $this->loadHttpClientFixtures(array(
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 404 Not Found',
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 410 Gone',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 404 Not Found',
-            'HTTP/1.1 400 Bad Request'
+            $curl6Exception,
+            $curl28Exception,
+            $curl28Exception,
+            $curl55Exception,
+            $curl6Exception,
+            $curl55Exception,
+            $curl55Exception,
+            $curl6Exception
         ));
         
         $webPage = new WebPage();
@@ -156,27 +174,19 @@ class GetLinksByHttpStateTest extends BaseTest {
         $this->assertEquals(array(
             'http://example.com/relative-path',
             'http://example.com/#fragment-only',
-            'http://www.youtube.com/example'
-        ), $checker->getLinksByHttpState(200)); 
+            'http://twitter.com/example'
+        ), $checker->getLinksByCurlState(6)); 
         
         $this->assertEquals(array(
             'http://example.com/root-relative-path',
-            'http://blog.example.com/'
-        ), $checker->getLinksByHttpState(404)); 
-        
-        $this->assertEquals(array(
             'http://example.com/protocol-relative-same-host'
-        ), $checker->getLinksByHttpState(500)); 
+        ), $checker->getLinksByCurlState(28)); 
         
-
         $this->assertEquals(array(
             'http://another.example.com/protocol-relative-same-host',
-        ), $checker->getLinksByHttpState(410));         
-        
-
-        $this->assertEquals(array(
-            'http://twitter.com/example',
-        ), $checker->getLinksByHttpState(400));      
+            'http://www.youtube.com/example',
+            'http://blog.example.com/'
+        ), $checker->getLinksByCurlState(55));     
     }    
     
     

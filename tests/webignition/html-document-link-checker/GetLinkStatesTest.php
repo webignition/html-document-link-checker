@@ -26,7 +26,7 @@ class GetLinkStatesTest extends BaseTest {
     }
     
     public function testWithAll200() {
-        $this->loadHttpFixtures(array(
+        $this->loadHttpClientFixtures(array(
             'HTTP/1.1 200 OK',
             'HTTP/1.1 200 OK',
             'HTTP/1.1 200 OK',
@@ -58,7 +58,7 @@ class GetLinkStatesTest extends BaseTest {
     }  
     
     public function testWithAll404() {
-        $this->loadHttpFixtures(array(
+        $this->loadHttpClientFixtures(array(
             'HTTP/1.1 404 Not Found',
             'HTTP/1.1 404 Not Found',
             'HTTP/1.1 404 Not Found',
@@ -90,7 +90,7 @@ class GetLinkStatesTest extends BaseTest {
     } 
     
     public function testWithAll503() {
-        $this->loadHttpFixtures(array(
+        $this->loadHttpClientFixtures(array(
             'HTTP/1.1 503 Service Unavailable',
             'HTTP/1.1 503 Service Unavailable',
             'HTTP/1.1 503 Service Unavailable',
@@ -123,7 +123,7 @@ class GetLinkStatesTest extends BaseTest {
     
     
     public function testWithVariedStatusCodes() {
-        $this->loadHttpFixtures(array(
+        $this->loadHttpClientFixtures(array(
             'HTTP/1.1 200 Ok',
             'HTTP/1.1 404 Not Found',
             'HTTP/1.1 500 Internal Server Error',
