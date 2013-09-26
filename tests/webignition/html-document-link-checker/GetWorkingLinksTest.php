@@ -6,11 +6,11 @@ use webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker;
 use webignition\HtmlDocumentLinkChecker\LinkState;
 use webignition\WebResource\WebPage\WebPage;
 
-class GetErroredLinksTest extends BaseTest {
+class GetWorkingLinksTest extends BaseTest {
     
     public function testWithNoWebPage() {
         $checker = new HtmlDocumentLinkChecker();        
-        $this->assertEquals(array(), $checker->getErroredLinks());         
+        $this->assertEquals(array(), $checker->getWorkingLinks());         
     }
     
     public function testWithNoLinks() {
@@ -21,7 +21,7 @@ class GetErroredLinksTest extends BaseTest {
         $checker = new HtmlDocumentLinkChecker();
         $checker->setWebPage($webPage);
         
-        $this->assertEquals(array(), $checker->getErroredLinks());  
+        $this->assertEquals(array(), $checker->getWorkingLinks());  
     }    
     
     public function testWithVariedHttpStatusCodes() {
@@ -45,12 +45,10 @@ class GetErroredLinksTest extends BaseTest {
         $checker->setHttpClient($this->getHttpClient());
         
         $this->assertEquals(array(
-            'http://example.com/root-relative-path' => new LinkState('http', 404),
-            'http://example.com/protocol-relative-same-host' => new LinkState('http', 500),
-            'http://another.example.com/protocol-relative-same-host' => new LinkState('http', 410),
-            'http://blog.example.com/' => new LinkState('http', 404),
-            'http://twitter.com/example' => new LinkState('http', 400),
-        ), $checker->getErroredLinks());      
+            'http://example.com/relative-path' => new LinkState('http', 200),
+            'http://example.com/#fragment-only' => new LinkState('http', 200),
+            'http://www.youtube.com/example' => new LinkState('http', 200)
+        ), $checker->getWorkingLinks());      
     }
 
     
@@ -84,16 +82,7 @@ class GetErroredLinksTest extends BaseTest {
         $checker->setWebPage($webPage);
         $checker->setHttpClient($this->getHttpClient());
         
-        $this->assertEquals(array(
-            'http://example.com/relative-path' => new LinkState('curl', 6),
-            'http://example.com/root-relative-path' => new LinkState('curl', 28),
-            'http://example.com/protocol-relative-same-host' => new LinkState('curl', 28),
-            'http://another.example.com/protocol-relative-same-host' => new LinkState('curl', 55),
-            'http://example.com/#fragment-only' => new LinkState('curl', 6),
-            'http://www.youtube.com/example' => new LinkState('curl', 55),
-            'http://blog.example.com/' => new LinkState('curl', 55),
-            'http://twitter.com/example' => new LinkState('curl', 6),
-        ), $checker->getErroredLinks());    
+        $this->assertEquals(array(), $checker->getWorkingLinks());    
     }   
     
     
@@ -127,13 +116,9 @@ class GetErroredLinksTest extends BaseTest {
         $checker->setHttpClient($this->getHttpClient());
         
         $this->assertEquals(array(
-            'http://example.com/relative-path' => new LinkState('curl', 6),
-            'http://example.com/protocol-relative-same-host' => new LinkState('curl', 28),
-            'http://another.example.com/protocol-relative-same-host' => new LinkState('http', 500),
-            'http://example.com/#fragment-only' => new LinkState('http', 400),
-            'http://www.youtube.com/example' => new LinkState('http', 404),
-            'http://blog.example.com/' => new LinkState('curl', 55)
-        ), $checker->getErroredLinks());        
+            'http://example.com/root-relative-path' => new LinkState('http', 200),
+            'http://twitter.com/example' => new LinkState('http', 200)
+        ), $checker->getWorkingLinks());        
     }    
     
     
