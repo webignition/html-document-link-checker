@@ -74,12 +74,16 @@ class HtmlDocumentLinkChecker {
      * @param int $statusCode
      * @return array
      */
-    public function getLinksByStatusCode($statusCode) {
+    public function getLinksByHttpState($statusCode) {
         $linkStates = $this->getLinkStates();
         $links = array();
         
-        foreach ($linkStates as $url => $linkStatusCode) {
-            if ($linkStatusCode == $statusCode) {
+        $comparator = new LinkState(LinkState::TYPE_HTTP, $statusCode);
+        
+        foreach ($linkStates as $url => $linkState) {
+            /* @var $linkState LinkState */
+            
+            if ($linkState->equals($comparator)) {
                 $links[] = $url;
             }
         }
@@ -112,7 +116,7 @@ class HtmlDocumentLinkChecker {
                 $response = $badResponseException->getResponse();
             }
             
-            $this->linkStates[$url] = $response->getStatusCode();
+            $this->linkStates[$url] = new LinkState('http', $response->getStatusCode());
         }
     }
     

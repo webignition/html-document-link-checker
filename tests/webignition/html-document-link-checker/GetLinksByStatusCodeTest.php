@@ -9,9 +9,9 @@ class GetLinksByStatusCodeTest extends BaseTest {
     
     public function testWithNoWebPage() {
         $checker = new HtmlDocumentLinkChecker();        
-        $this->assertEquals(array(), $checker->getLinksByStatusCode(200));     
-        $this->assertEquals(array(), $checker->getLinksByStatusCode(404));     
-        $this->assertEquals(array(), $checker->getLinksByStatusCode(500));     
+        $this->assertEquals(array(), $checker->getLinksByHttpState(200));     
+        $this->assertEquals(array(), $checker->getLinksByHttpState(404));     
+        $this->assertEquals(array(), $checker->getLinksByHttpState(500));     
     }
     
     public function testWithNoLinks() {
@@ -22,9 +22,9 @@ class GetLinksByStatusCodeTest extends BaseTest {
         $checker = new HtmlDocumentLinkChecker();
         $checker->setWebPage($webPage);
         
-        $this->assertEquals(array(), $checker->getLinksByStatusCode(200));     
-        $this->assertEquals(array(), $checker->getLinksByStatusCode(404));     
-        $this->assertEquals(array(), $checker->getLinksByStatusCode(500));
+        $this->assertEquals(array(), $checker->getLinksByHttpState(200));     
+        $this->assertEquals(array(), $checker->getLinksByHttpState(404));     
+        $this->assertEquals(array(), $checker->getLinksByHttpState(500));
     }
     
     public function testWithAll200() {
@@ -47,8 +47,8 @@ class GetLinksByStatusCodeTest extends BaseTest {
         $checker->setWebPage($webPage);
         $checker->setHttpClient($this->getHttpClient());
 
-        $this->assertEquals(array(), $checker->getLinksByStatusCode(404));         
-        $this->assertEquals(array(), $checker->getLinksByStatusCode(500));
+        $this->assertEquals(array(), $checker->getLinksByHttpState(404));         
+        $this->assertEquals(array(), $checker->getLinksByHttpState(500));
         
         $this->assertEquals(array(
             'http://example.com/relative-path',
@@ -59,7 +59,7 @@ class GetLinksByStatusCodeTest extends BaseTest {
             'http://www.youtube.com/example',
             'http://blog.example.com/',
             'http://twitter.com/example',
-        ), $checker->getLinksByStatusCode(200));         
+        ), $checker->getLinksByHttpState(200));         
     }  
     
     public function testWithAll404() {
@@ -82,8 +82,8 @@ class GetLinksByStatusCodeTest extends BaseTest {
         $checker->setWebPage($webPage);
         $checker->setHttpClient($this->getHttpClient());
         
-        $this->assertEquals(array(), $checker->getLinksByStatusCode(200));         
-        $this->assertEquals(array(), $checker->getLinksByStatusCode(500));        
+        $this->assertEquals(array(), $checker->getLinksByHttpState(200));         
+        $this->assertEquals(array(), $checker->getLinksByHttpState(500));        
         
         $this->assertEquals(array(
             'http://example.com/relative-path',
@@ -94,7 +94,7 @@ class GetLinksByStatusCodeTest extends BaseTest {
             'http://www.youtube.com/example',
             'http://blog.example.com/',
             'http://twitter.com/example',
-        ), $checker->getLinksByStatusCode(404));         
+        ), $checker->getLinksByHttpState(404));         
     } 
     
     public function testWithAll503() {
@@ -117,8 +117,8 @@ class GetLinksByStatusCodeTest extends BaseTest {
         $checker->setWebPage($webPage);
         $checker->setHttpClient($this->getHttpClient());
         
-        $this->assertEquals(array(), $checker->getLinksByStatusCode(200));         
-        $this->assertEquals(array(), $checker->getLinksByStatusCode(500));         
+        $this->assertEquals(array(), $checker->getLinksByHttpState(200));         
+        $this->assertEquals(array(), $checker->getLinksByHttpState(500));         
         
         $this->assertEquals(array(
             'http://example.com/relative-path',
@@ -129,7 +129,7 @@ class GetLinksByStatusCodeTest extends BaseTest {
             'http://www.youtube.com/example',
             'http://blog.example.com/',
             'http://twitter.com/example',
-        ), $checker->getLinksByStatusCode(503));         
+        ), $checker->getLinksByHttpState(503));         
     }
     
     
@@ -157,26 +157,26 @@ class GetLinksByStatusCodeTest extends BaseTest {
             'http://example.com/relative-path',
             'http://example.com/#fragment-only',
             'http://www.youtube.com/example'
-        ), $checker->getLinksByStatusCode(200)); 
+        ), $checker->getLinksByHttpState(200)); 
         
         $this->assertEquals(array(
             'http://example.com/root-relative-path',
             'http://blog.example.com/'
-        ), $checker->getLinksByStatusCode(404)); 
+        ), $checker->getLinksByHttpState(404)); 
         
         $this->assertEquals(array(
             'http://example.com/protocol-relative-same-host'
-        ), $checker->getLinksByStatusCode(500)); 
+        ), $checker->getLinksByHttpState(500)); 
         
 
         $this->assertEquals(array(
             'http://another.example.com/protocol-relative-same-host',
-        ), $checker->getLinksByStatusCode(410));         
+        ), $checker->getLinksByHttpState(410));         
         
 
         $this->assertEquals(array(
             'http://twitter.com/example',
-        ), $checker->getLinksByStatusCode(400));      
+        ), $checker->getLinksByHttpState(400));      
     }    
     
     

@@ -3,6 +3,7 @@
 namespace webignition\HtmlDocumentLinkChecker\Tests;
 
 use webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker;
+use webignition\HtmlDocumentLinkChecker\LinkState;
 use webignition\WebResource\WebPage\WebPage;
 
 class GetLinkStatesTest extends BaseTest {
@@ -45,14 +46,14 @@ class GetLinkStatesTest extends BaseTest {
         $checker->setHttpClient($this->getHttpClient());
         
         $this->assertEquals(array(
-            'http://example.com/relative-path' => 200,
-            'http://example.com/root-relative-path' => 200,
-            'http://example.com/protocol-relative-same-host' => 200,
-            'http://another.example.com/protocol-relative-same-host' => 200,
-            'http://example.com/#fragment-only' => 200,
-            'http://www.youtube.com/example' => 200,
-            'http://blog.example.com/' => 200,
-            'http://twitter.com/example' => 200,
+            'http://example.com/relative-path' => new LinkState('http', 200),
+            'http://example.com/root-relative-path' => new LinkState('http', 200),
+            'http://example.com/protocol-relative-same-host' => new LinkState('http', 200),
+            'http://another.example.com/protocol-relative-same-host' => new LinkState('http', 200),
+            'http://example.com/#fragment-only' => new LinkState('http', 200),
+            'http://www.youtube.com/example' => new LinkState('http', 200),
+            'http://blog.example.com/' => new LinkState('http', 200),
+            'http://twitter.com/example' => new LinkState('http', 200),
         ), $checker->getLinkStates());         
     }  
     
@@ -77,14 +78,14 @@ class GetLinkStatesTest extends BaseTest {
         $checker->setHttpClient($this->getHttpClient());
         
         $this->assertEquals(array(
-            'http://example.com/relative-path' => 404,
-            'http://example.com/root-relative-path' => 404,
-            'http://example.com/protocol-relative-same-host' => 404,
-            'http://another.example.com/protocol-relative-same-host' => 404,
-            'http://example.com/#fragment-only' => 404,
-            'http://www.youtube.com/example' => 404,
-            'http://blog.example.com/' => 404,
-            'http://twitter.com/example' => 404,
+            'http://example.com/relative-path' => new LinkState('http', 404),
+            'http://example.com/root-relative-path' => new LinkState('http', 404),
+            'http://example.com/protocol-relative-same-host' => new LinkState('http', 404),
+            'http://another.example.com/protocol-relative-same-host' => new LinkState('http', 404),
+            'http://example.com/#fragment-only' => new LinkState('http', 404),
+            'http://www.youtube.com/example' => new LinkState('http', 404),
+            'http://blog.example.com/' => new LinkState('http', 404),
+            'http://twitter.com/example' => new LinkState('http', 404),
         ), $checker->getLinkStates());         
     } 
     
@@ -109,14 +110,14 @@ class GetLinkStatesTest extends BaseTest {
         $checker->setHttpClient($this->getHttpClient());
         
         $this->assertEquals(array(
-            'http://example.com/relative-path' => 503,
-            'http://example.com/root-relative-path' => 503,
-            'http://example.com/protocol-relative-same-host' => 503,
-            'http://another.example.com/protocol-relative-same-host' => 503,
-            'http://example.com/#fragment-only' => 503,
-            'http://www.youtube.com/example' => 503,
-            'http://blog.example.com/' => 503,
-            'http://twitter.com/example' => 503,
+            'http://example.com/relative-path' => new LinkState('http', 503),
+            'http://example.com/root-relative-path' => new LinkState('http', 503),
+            'http://example.com/protocol-relative-same-host' => new LinkState('http', 503),
+            'http://another.example.com/protocol-relative-same-host' => new LinkState('http', 503),
+            'http://example.com/#fragment-only' => new LinkState('http', 503),
+            'http://www.youtube.com/example' => new LinkState('http', 503),
+            'http://blog.example.com/' => new LinkState('http', 503),
+            'http://twitter.com/example' => new LinkState('http', 503),
         ), $checker->getLinkStates());         
     }
     
@@ -142,14 +143,14 @@ class GetLinkStatesTest extends BaseTest {
         $checker->setHttpClient($this->getHttpClient());
         
         $this->assertEquals(array(
-            'http://example.com/relative-path' => 200,
-            'http://example.com/root-relative-path' => 404,
-            'http://example.com/protocol-relative-same-host' => 500,
-            'http://another.example.com/protocol-relative-same-host' => 410,
-            'http://example.com/#fragment-only' => 200,
-            'http://www.youtube.com/example' => 200,
-            'http://blog.example.com/' => 404,
-            'http://twitter.com/example' => 400,
+            'http://example.com/relative-path' => new LinkState('http', 200),
+            'http://example.com/root-relative-path' => new LinkState('http', 404),
+            'http://example.com/protocol-relative-same-host' => new LinkState('http', 500),
+            'http://another.example.com/protocol-relative-same-host' => new LinkState('http', 410),
+            'http://example.com/#fragment-only' => new LinkState('http', 200),
+            'http://www.youtube.com/example' => new LinkState('http', 200),
+            'http://blog.example.com/' => new LinkState('http', 404),
+            'http://twitter.com/example' => new LinkState('http', 400),
         ), $checker->getLinkStates());         
     }    
     
