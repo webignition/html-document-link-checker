@@ -6,12 +6,11 @@ use webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker;
 use webignition\HtmlDocumentLinkChecker\LinkState;
 use webignition\WebResource\WebPage\WebPage;
 
-class GetLinkStatesTest extends BaseTest {
+class GetErroredLinksTest extends BaseTest {
     
     public function testWithNoWebPage() {
-        $checker = new HtmlDocumentLinkChecker();
-        
-        $this->assertEquals(array(), $checker->getLinkStates());     
+        $checker = new HtmlDocumentLinkChecker();        
+        $this->assertEquals(array(), $checker->getErroredLinks());         
     }
     
     public function testWithNoLinks() {
@@ -22,9 +21,8 @@ class GetLinkStatesTest extends BaseTest {
         $checker = new HtmlDocumentLinkChecker();
         $checker->setWebPage($webPage);
         
-        $this->assertEquals(array(), $checker->getLinkStates()); 
-    }
-    
+        $this->assertEquals(array(), $checker->getErroredLinks());  
+    }    
     
     public function testWithVariedHttpStatusCodes() {
         $this->loadHttpClientFixtures(array(
@@ -47,19 +45,17 @@ class GetLinkStatesTest extends BaseTest {
         $checker->setHttpClient($this->getHttpClient());
         
         $this->assertEquals(array(
-            'http://example.com/relative-path' => new LinkState('http', 200),
             'http://example.com/root-relative-path' => new LinkState('http', 404),
             'http://example.com/protocol-relative-same-host' => new LinkState('http', 500),
             'http://another.example.com/protocol-relative-same-host' => new LinkState('http', 410),
-            'http://example.com/#fragment-only' => new LinkState('http', 200),
-            'http://www.youtube.com/example' => new LinkState('http', 200),
             'http://blog.example.com/' => new LinkState('http', 404),
             'http://twitter.com/example' => new LinkState('http', 400),
-        ), $checker->getLinkStates());         
-    }  
+        ), $checker->getErroredLinks());      
+    }
+
     
     
-    public function testWithVariedCurlCodes() {
+    public function testWithVariedCurlCodesCodes() {
         $curl6Exception = new \Guzzle\Http\Exception\CurlException();
         $curl6Exception->setError('Couldn\'t resolve host. The given remote host was not resolved.', 6);        
         
@@ -97,8 +93,8 @@ class GetLinkStatesTest extends BaseTest {
             'http://www.youtube.com/example' => new LinkState('curl', 55),
             'http://blog.example.com/' => new LinkState('curl', 55),
             'http://twitter.com/example' => new LinkState('curl', 6),
-        ), $checker->getLinkStates());    
-    }
+        ), $checker->getErroredLinks());    
+    }   
     
     
     public function testWithMixedHttpStatusCodesAndCurlCodes() {
@@ -132,15 +128,13 @@ class GetLinkStatesTest extends BaseTest {
         
         $this->assertEquals(array(
             'http://example.com/relative-path' => new LinkState('curl', 6),
-            'http://example.com/root-relative-path' => new LinkState('http', 200),
             'http://example.com/protocol-relative-same-host' => new LinkState('curl', 28),
             'http://another.example.com/protocol-relative-same-host' => new LinkState('http', 500),
             'http://example.com/#fragment-only' => new LinkState('http', 400),
             'http://www.youtube.com/example' => new LinkState('http', 404),
-            'http://blog.example.com/' => new LinkState('curl', 55),
-            'http://twitter.com/example' => new LinkState('http', 200),
-        ), $checker->getLinkStates());        
-    }
+            'http://blog.example.com/' => new LinkState('curl', 55)
+        ), $checker->getErroredLinks());        
+    }    
     
     
 }

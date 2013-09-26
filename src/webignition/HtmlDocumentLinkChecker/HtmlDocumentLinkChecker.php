@@ -86,6 +86,74 @@ class HtmlDocumentLinkChecker {
     public function getLinksByCurlState($curlCode) {
         return $this->getLinksByLinkState(new LinkState(LinkState::TYPE_CURL, $curlCode));       
     }
+    
+    
+    /**
+     * 
+     * @return array
+     */
+    public function getErroredLinks() {
+        $curlStateLinks = $this->getLinksByType(LinkState::TYPE_CURL);
+        $httpStateLinks = $this->getLinksByType(LinkState::TYPE_HTTP);
+
+        $links = $curlStateLinks;
+        foreach ($httpStateLinks as $url => $linkState) {
+            if ($this->isHttpErrorStatusCode($linkState->getState())) {
+                $links[$url] = $linkState;
+            }
+        }
+        
+        return $links;
+    }
+    
+    
+    /**
+     * 
+     * @return array
+     */
+    public function getWorkingLinks() {
+        $httpStateLinks = $this->getLinksByType(LinkState::TYPE_HTTP);
+        
+        $links = array();
+        foreach ($httpStateLinks as $url => $linkState) {
+            if (!$this->isHttpErrorStatusCode($linkState->getState())) {
+                $links[$url] = $linkState;
+            }
+        }
+        
+        return $links;        
+    }
+    
+    
+    /**
+     * 
+     * @param int $statusCode
+     * @return boolean
+     */
+    private function isHttpErrorStatusCode($statusCode) {        
+        return in_array(substr((string)$statusCode, 0, 1), array('4', '5'));
+    }
+    
+    
+    
+    
+    /**
+     * 
+     * @param string $type
+     * @return array
+     */
+    private function getLinksByType($type) {
+        $linkStates = $this->getLinkStates();
+        $links = array();
+        
+        foreach ($linkStates as $url => $linkState) {
+            if ($linkState->getType() == $type) {
+                $links[$url] = $linkState;
+            }
+        }
+        
+        return $links;
+    }
 
     
     /**
@@ -133,11 +201,15 @@ class HtmlDocumentLinkChecker {
                     $response = $request->send();
                 } catch (\Guzzle\Http\Exception\BadResponseException $badResponseException) {
                     $response = $badResponseException->getResponse();
-                }           
-
-                $this->linkStates[$url] = new LinkState(LinkState::TYPE_HTTP, $response->getStatusCode());                
+                } 
+                
+                if (!isset($this->linkStates[$url])) {
+                    $this->linkStates[$url] = new LinkState(LinkState::TYPE_HTTP, $response->getStatusCode());                
+                }
             } catch (\Guzzle\Http\Exception\CurlException $curlException) {
-                $this->linkStates[$url] = new LinkState(LinkState::TYPE_CURL, $curlException->getErrorNo());
+                if (!isset($this->linkStates[$url])) {
+                    $this->linkStates[$url] = new LinkState(LinkState::TYPE_CURL, $curlException->getErrorNo());                    
+                }                
             }
         }
     }
