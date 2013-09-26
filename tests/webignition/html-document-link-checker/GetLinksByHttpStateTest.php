@@ -5,7 +5,7 @@ namespace webignition\HtmlDocumentLinkChecker\Tests;
 use webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker;
 use webignition\WebResource\WebPage\WebPage;
 
-class GetLinksByStatusCodeTest extends BaseTest {
+class GetLinksByHttpStateTest extends BaseTest {
     
     public function testWithNoWebPage() {
         $checker = new HtmlDocumentLinkChecker();        
