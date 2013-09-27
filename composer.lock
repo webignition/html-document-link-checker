@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "b7344c4d9d7ae87898da7bc64a52486b",
+    "hash": "323d13c9094ae25feb34d07b9bf0c006",
     "packages": [
         {
             "name": "guzzle/guzzle",
@@ -140,17 +140,17 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.3.4",
+            "version": "v2.3.5",
             "target-dir": "Symfony/Component/EventDispatcher",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/EventDispatcher.git",
-                "reference": "41c9826457c65fa3cf746f214985b7ca9cba42f8"
+                "reference": "7fc72a7a346a1887d3968cc1ce5642a15cd182e9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/EventDispatcher/zipball/41c9826457c65fa3cf746f214985b7ca9cba42f8",
-                "reference": "41c9826457c65fa3cf746f214985b7ca9cba42f8",
+                "url": "https://api.github.com/repos/symfony/EventDispatcher/zipball/7fc72a7a346a1887d3968cc1ce5642a15cd182e9",
+                "reference": "7fc72a7a346a1887d3968cc1ce5642a15cd182e9",
                 "shasum": ""
             },
             "require": {
@@ -190,7 +190,7 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "http://symfony.com",
-            "time": "2013-07-21 12:12:18"
+            "time": "2013-09-19 09:45:20"
         },
         {
             "name": "webignition/absolute-url-deriver",
@@ -236,16 +236,16 @@
         },
         {
             "name": "webignition/html-document-link-finder",
-            "version": "0.2.1",
+            "version": "0.3.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webignition/html-document-link-url-finder.git",
-                "reference": "30bdbd0f79d2f271f24d66d529b6a61212376399"
+                "reference": "617bf7e1125d3b6effa3e857abce2ac1f31b21d8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webignition/html-document-link-url-finder/zipball/30bdbd0f79d2f271f24d66d529b6a61212376399",
-                "reference": "30bdbd0f79d2f271f24d66d529b6a61212376399",
+                "url": "https://api.github.com/repos/webignition/html-document-link-url-finder/zipball/617bf7e1125d3b6effa3e857abce2ac1f31b21d8",
+                "reference": "617bf7e1125d3b6effa3e857abce2ac1f31b21d8",
                 "shasum": ""
             },
             "require": {
@@ -277,7 +277,7 @@
                 "linkifier",
                 "validation"
             ],
-            "time": "2013-09-26 14:18:36"
+            "time": "2013-09-27 13:33:43"
         },
         {
             "name": "webignition/internet-media-type",

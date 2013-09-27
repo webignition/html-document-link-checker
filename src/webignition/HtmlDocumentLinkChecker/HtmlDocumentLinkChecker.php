@@ -1,7 +1,7 @@
 <?php
 namespace webignition\HtmlDocumentLinkChecker;
 
-class HtmlDocumentLinkChecker {
+class HtmlDocumentLinkChecker {   
     
     /**
      *
@@ -60,7 +60,7 @@ class HtmlDocumentLinkChecker {
      * 
      * @return array
      */
-    public function getLinkStates() {
+    public function getAll() {
         if (is_null($this->linkStates)) {
             $this->checkLinkStates();
         }
@@ -74,8 +74,8 @@ class HtmlDocumentLinkChecker {
      * @param int $statusCode
      * @return array
      */
-    public function getLinksByHttpState($statusCode) {
-        return $this->getLinksByLinkState(new LinkState(LinkState::TYPE_HTTP, $statusCode));       
+    public function getByHttpState($statusCode) {
+        return $this->getLinksByLinkState(LinkState::TYPE_HTTP, $statusCode);       
     }
     
     /**
@@ -83,8 +83,8 @@ class HtmlDocumentLinkChecker {
      * @param int $statusCode
      * @return array
      */    
-    public function getLinksByCurlState($curlCode) {
-        return $this->getLinksByLinkState(new LinkState(LinkState::TYPE_CURL, $curlCode));       
+    public function getByCurlState($curlCode) {
+        return $this->getLinksByLinkState(LinkState::TYPE_CURL, $curlCode);       
     }
     
     
@@ -92,14 +92,14 @@ class HtmlDocumentLinkChecker {
      * 
      * @return array
      */
-    public function getErroredLinks() {
+    public function getErrored() {
         $curlStateLinks = $this->getLinksByType(LinkState::TYPE_CURL);
         $httpStateLinks = $this->getLinksByType(LinkState::TYPE_HTTP);
 
         $links = $curlStateLinks;
-        foreach ($httpStateLinks as $url => $linkState) {
+        foreach ($httpStateLinks as $linkState) {
             if ($this->isHttpErrorStatusCode($linkState->getState())) {
-                $links[$url] = $linkState;
+                $links[] = $linkState;
             }
         }
         
@@ -111,13 +111,13 @@ class HtmlDocumentLinkChecker {
      * 
      * @return array
      */
-    public function getWorkingLinks() {
+    public function getWorking() {
         $httpStateLinks = $this->getLinksByType(LinkState::TYPE_HTTP);
         
         $links = array();
-        foreach ($httpStateLinks as $url => $linkState) {
+        foreach ($httpStateLinks as $linkState) {
             if (!$this->isHttpErrorStatusCode($linkState->getState())) {
-                $links[$url] = $linkState;
+                $links[] = $linkState;
             }
         }
         
@@ -143,12 +143,12 @@ class HtmlDocumentLinkChecker {
      * @return array
      */
     private function getLinksByType($type) {
-        $linkStates = $this->getLinkStates();
+        $linkStates = $this->getAll();
         $links = array();
         
         foreach ($linkStates as $url => $linkState) {
             if ($linkState->getType() == $type) {
-                $links[$url] = $linkState;
+                $links[] = $linkState;
             }
         }
         
@@ -158,18 +158,17 @@ class HtmlDocumentLinkChecker {
     
     /**
      * 
-     * @param \webignition\HtmlDocumentLinkChecker\LinkState $comparator
      * @return array
      */
-    private function getLinksByLinkState(LinkState $comparator) {
-        $linkStates = $this->getLinkStates();
+    private function getLinksByLinkState($type, $state) {
+        $linkStates = $this->getAll();
         $links = array();
         
-        foreach ($linkStates as $url => $linkState) {
+        foreach ($linkStates as $linkState) {
             /* @var $linkState LinkState */
             
-            if ($linkState->equals($comparator)) {
-                $links[] = $url;
+            if ($linkState->getType() == $type && $linkState->getState() == $state) {
+                $links[] = $linkState;
             }
         }
         
@@ -193,25 +192,21 @@ class HtmlDocumentLinkChecker {
             return;            
         }
         
-        foreach ($linkFinder->getUrls() as $url) {
-            $request = $this->getHttpClient()->head($url);
-
+        foreach ($linkFinder->getAll() as $link) {            
+            $request = $this->getHttpClient()->head($link['url']);
+            
             try {
                 try {
                     $response = $request->send();
                 } catch (\Guzzle\Http\Exception\BadResponseException $badResponseException) {
                     $response = $badResponseException->getResponse();
-                } 
-                
-                if (!isset($this->linkStates[$url])) {
-                    $this->linkStates[$url] = new LinkState(LinkState::TYPE_HTTP, $response->getStatusCode());                
                 }
-            } catch (\Guzzle\Http\Exception\CurlException $curlException) {
-                if (!isset($this->linkStates[$url])) {
-                    $this->linkStates[$url] = new LinkState(LinkState::TYPE_CURL, $curlException->getErrorNo());                    
-                }                
-            }
+                
+                $this->linkStates[] = new LinkState(LinkState::TYPE_HTTP, $response->getStatusCode(), $link['url'], $link['element']);
+            } catch (\Guzzle\Http\Exception\CurlException $curlException) {                               
+                $this->linkStates[] = new LinkState(LinkState::TYPE_CURL, $curlException->getErrorNo(), $link['url'], $link['element']);           
+            }          
         }
-    }
+    }   
     
 }

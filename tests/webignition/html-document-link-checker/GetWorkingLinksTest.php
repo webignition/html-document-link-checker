@@ -10,7 +10,7 @@ class GetWorkingLinksTest extends BaseTest {
     
     public function testWithNoWebPage() {
         $checker = new HtmlDocumentLinkChecker();        
-        $this->assertEquals(array(), $checker->getWorkingLinks());         
+        $this->assertEquals(array(), $checker->getWorking());         
     }
     
     public function testWithNoLinks() {
@@ -21,7 +21,7 @@ class GetWorkingLinksTest extends BaseTest {
         $checker = new HtmlDocumentLinkChecker();
         $checker->setWebPage($webPage);
         
-        $this->assertEquals(array(), $checker->getWorkingLinks());  
+        $this->assertEquals(array(), $checker->getWorking());  
     }    
     
     public function testWithVariedHttpStatusCodes() {
@@ -33,7 +33,11 @@ class GetWorkingLinksTest extends BaseTest {
             'HTTP/1.1 200 Ok',
             'HTTP/1.1 200 Ok',
             'HTTP/1.1 404 Not Found',
-            'HTTP/1.1 400 Bad Request'
+            'HTTP/1.1 400 Bad Request',
+            'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 404 Not Found',
         ));
         
         $webPage = new WebPage();
@@ -45,10 +49,10 @@ class GetWorkingLinksTest extends BaseTest {
         $checker->setHttpClient($this->getHttpClient());
         
         $this->assertEquals(array(
-            'http://example.com/relative-path' => new LinkState('http', 200),
-            'http://example.com/#fragment-only' => new LinkState('http', 200),
-            'http://www.youtube.com/example' => new LinkState('http', 200)
-        ), $checker->getWorkingLinks());      
+            new LinkState('http', 200, 'http://example.com/relative-path', '<a href="relative-path">Relative Path</a>'),
+            new LinkState('http', 200, 'http://example.com/#fragment-only', '<a href="#fragment-only">Fragment Only</a>'),
+            new LinkState('http', 200, 'http://example.com/#fragment-only', '<a href="#fragment-only">Repeated Fragment Only (should be ignored)</a>')
+        ), $checker->getWorking());        
     }
 
     
@@ -71,6 +75,10 @@ class GetWorkingLinksTest extends BaseTest {
             $curl6Exception,
             $curl55Exception,
             $curl55Exception,
+            $curl6Exception,
+            $curl6Exception,
+            $curl6Exception,
+            $curl6Exception,
             $curl6Exception
         ));
         
@@ -82,7 +90,7 @@ class GetWorkingLinksTest extends BaseTest {
         $checker->setWebPage($webPage);
         $checker->setHttpClient($this->getHttpClient());
         
-        $this->assertEquals(array(), $checker->getWorkingLinks());    
+        $this->assertEquals(array(), $checker->getWorking());    
     }   
     
     
@@ -105,6 +113,10 @@ class GetWorkingLinksTest extends BaseTest {
             'HTTP/1.1 404 Not Found', 
             $curl55Exception,
             'HTTP/1.1 200 Ok',
+            'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 404 Not Found',
         ));      
         
         $webPage = new WebPage();
@@ -116,9 +128,9 @@ class GetWorkingLinksTest extends BaseTest {
         $checker->setHttpClient($this->getHttpClient());
         
         $this->assertEquals(array(
-            'http://example.com/root-relative-path' => new LinkState('http', 200),
-            'http://twitter.com/example' => new LinkState('http', 200)
-        ), $checker->getWorkingLinks());        
+            new LinkState('http', 200, 'http://example.com/root-relative-path', '<a href="/root-relative-path">Root Relative Path</a>'),
+            new LinkState('http', 200, 'http://example.com/images/youtube.png', '<img src="/images/youtube.png">')
+        ), $checker->getWorking());        
     }    
     
     
