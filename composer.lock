@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "323d13c9094ae25feb34d07b9bf0c006",
+    "hash": "368ded1f2d534f6eb2ef6e6ef0f1b844",
     "packages": [
         {
             "name": "guzzle/guzzle",
@@ -236,16 +236,16 @@
         },
         {
             "name": "webignition/html-document-link-finder",
-            "version": "0.3.4",
+            "version": "0.3.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webignition/html-document-link-url-finder.git",
-                "reference": "617bf7e1125d3b6effa3e857abce2ac1f31b21d8"
+                "reference": "69acba075e61c06c228e62f336c809f60627ffed"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webignition/html-document-link-url-finder/zipball/617bf7e1125d3b6effa3e857abce2ac1f31b21d8",
-                "reference": "617bf7e1125d3b6effa3e857abce2ac1f31b21d8",
+                "url": "https://api.github.com/repos/webignition/html-document-link-url-finder/zipball/69acba075e61c06c228e62f336c809f60627ffed",
+                "reference": "69acba075e61c06c228e62f336c809f60627ffed",
                 "shasum": ""
             },
             "require": {
@@ -277,7 +277,7 @@
                 "linkifier",
                 "validation"
             ],
-            "time": "2013-09-27 13:33:43"
+            "time": "2013-10-01 14:42:00"
         },
         {
             "name": "webignition/internet-media-type",
