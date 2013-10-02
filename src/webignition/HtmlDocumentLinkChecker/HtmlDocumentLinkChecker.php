@@ -5,6 +5,30 @@ class HtmlDocumentLinkChecker {
     
     const URL_SCHEME_MAILTO = 'mailto';
     const HTTP_STATUS_CODE_METHOD_NOT_ALLOWED = 405;
+    const HTTP_STATUS_CODE_NOT_IMPLEMENTED = 501;
+    
+    const HTTP_METHOD_HEAD = 'HEAD';
+    const HTTP_METHOD_GET = 'GET';
+    
+    
+    /**
+     *
+     * @var array
+     */
+    private $httpMethodList = array(
+        self::HTTP_METHOD_HEAD,
+        self::HTTP_METHOD_GET
+    );
+    
+    
+    /**
+     *
+     * @var array
+     */
+    private $httpStatusCodesToRetry = array(
+        self::HTTP_STATUS_CODE_METHOD_NOT_ALLOWED,
+        self::HTTP_STATUS_CODE_NOT_IMPLEMENTED
+    );
     
     
     /**
@@ -12,7 +36,7 @@ class HtmlDocumentLinkChecker {
      * @var array
      */
     private $schemesToExclude = array(
-        self::URL_SCHEME_MAILTO
+        self::URL_SCHEME_MAILTO        
     );
     
     
@@ -206,27 +230,51 @@ class HtmlDocumentLinkChecker {
         }
         
         foreach ($linkFinder->getAll() as $link) { 
-            if ($this->isUrlToBeIncluded($link['url'])) {
-                $request = $this->getHttpClient()->head($link['url']);
-
-                try {
-                    try {
-                        $response = $request->send();
-                    } catch (\Guzzle\Http\Exception\BadResponseException $badResponseException) {                        
-                        if ($badResponseException->getResponse()->getStatusCode() == self::HTTP_STATUS_CODE_METHOD_NOT_ALLOWED) {
-                            $request = $this->getHttpClient()->get($link['url']);
-                            $response = $request->send();
-                        } else {
-                            $response = $badResponseException->getResponse();
-                        }                        
-                    }
-
-                    $this->linkStates[] = new LinkState(LinkState::TYPE_HTTP, $response->getStatusCode(), $link['url'], $link['element']);
-                } catch (\Guzzle\Http\Exception\CurlException $curlException) {                               
-                    $this->linkStates[] = new LinkState(LinkState::TYPE_CURL, $curlException->getErrorNo(), $link['url'], $link['element']);           
-                }                 
+            if ($this->isUrlToBeIncluded($link['url'])) {                
+                $linkState = $this->getLinkState($link['url']);
+                $linkState->setContext($link['element']);                
+                $this->linkStates[] = $linkState;
             }
         }
+    }
+    
+    
+    /**
+     * 
+     * @param string $url
+     * @return \webignition\HtmlDocumentLinkChecker\LinkState
+     */
+    private function getLinkState($url) {
+        try {
+            foreach ($this->httpMethodList as $methodIndex => $method) {
+                $isLastMethod = $methodIndex == count($this->httpMethodList) - 1;            
+                $response = $this->getResponseForHttpMethod($url, $method);
+
+                if (!$response->isError() || $isLastMethod || !in_array($response->getStatusCode(), $this->httpStatusCodesToRetry)) {
+                    return new LinkState(LinkState::TYPE_HTTP, $response->getStatusCode(), $url, '');
+                }
+            }            
+        } catch (\Guzzle\Http\Exception\CurlException $curlException) {
+            return new LinkState(LinkState::TYPE_CURL, $curlException->getErrorNo(), $url, '');
+        }       
+    }
+    
+    
+    /**
+     * 
+     * @param string $url
+     * @param string $method
+     * @return \Guzzle\Http\Message\Response
+     */
+    private function getResponseForHttpMethod($url, $method) {
+        try {
+            $request = $this->getHttpClient()->createRequest($method, $url);
+            $response = $request->send();
+        } catch (\Guzzle\Http\Exception\BadResponseException $badResponseException) {
+            $response = $badResponseException->getResponse();                            
+        }
+        
+        return $response;
     }
     
     
@@ -238,6 +286,6 @@ class HtmlDocumentLinkChecker {
     private function isUrlToBeIncluded($url) {
         $urlObject = new \webignition\NormalisedUrl\NormalisedUrl($url);
         return !in_array($urlObject->getScheme(), $this->schemesToExclude);
-    }
+    }    
     
 }
