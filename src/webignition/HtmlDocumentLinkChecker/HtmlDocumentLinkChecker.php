@@ -1,10 +1,10 @@
 <?php
 namespace webignition\HtmlDocumentLinkChecker;
 
-class HtmlDocumentLinkChecker {   
-    
+class HtmlDocumentLinkChecker {           
     
     const URL_SCHEME_MAILTO = 'mailto';
+    const HTTP_STATUS_CODE_METHOD_NOT_ALLOWED = 405;
     
     
     /**
@@ -212,8 +212,13 @@ class HtmlDocumentLinkChecker {
                 try {
                     try {
                         $response = $request->send();
-                    } catch (\Guzzle\Http\Exception\BadResponseException $badResponseException) {
-                        $response = $badResponseException->getResponse();
+                    } catch (\Guzzle\Http\Exception\BadResponseException $badResponseException) {                        
+                        if ($badResponseException->getResponse()->getStatusCode() == self::HTTP_STATUS_CODE_METHOD_NOT_ALLOWED) {
+                            $request = $this->getHttpClient()->get($link['url']);
+                            $response = $request->send();
+                        } else {
+                            $response = $badResponseException->getResponse();
+                        }                        
                     }
 
                     $this->linkStates[] = new LinkState(LinkState::TYPE_HTTP, $response->getStatusCode(), $link['url'], $link['element']);

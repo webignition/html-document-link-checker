@@ -153,9 +153,27 @@ class GetErroredLinksTest extends BaseTest {
         
         $checker = new HtmlDocumentLinkChecker();
         $checker->setWebPage($webPage);
+        $checker->setHttpClient($this->getHttpClient());
         
         $this->assertEquals(array(), $checker->getErrored());          
     }
+    
+    public function testTest() {
+        $this->loadHttpClientFixtures(array(
+            'HTTP/1.1 405',
+            'HTTP/1.1 200 Ok'
+        ));
+        
+        $webPage = new WebPage();
+        $webPage->setUrl('http://example.com');
+        $webPage->setContent($this->getHtmlDocumentFixture('example06'));
+        
+        $checker = new HtmlDocumentLinkChecker();
+        $checker->setWebPage($webPage);
+        $checker->setHttpClient($this->getHttpClient());
+        
+        $this->assertEquals(array(), $checker->getErrored());
+    }    
     
     
 }
