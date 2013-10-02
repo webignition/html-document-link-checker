@@ -139,7 +139,23 @@ class GetErroredLinksTest extends BaseTest {
             new LinkState('http', 400, 'http://example.com/#fragment-only', '<a href="#fragment-only">Fragment Only</a>'),
             new LinkState('http', 404, 'http://example.com/#fragment-only', '<a href="#fragment-only">Repeated Fragment Only (should be ignored)</a>'),            
         ), $checker->getErrored());       
-    }    
+    }
+    
+    
+    public function testExcludeMailtoLinks() {
+        $this->loadHttpClientFixtures(array(
+            'HTTP/1.1 200 Ok'
+        ));        
+        
+        $webPage = new WebPage();
+        $webPage->setUrl('http://example.com/');
+        $webPage->setContent($this->getHtmlDocumentFixture('example05'));
+        
+        $checker = new HtmlDocumentLinkChecker();
+        $checker->setWebPage($webPage);
+        
+        $this->assertEquals(array(), $checker->getErrored());          
+    }
     
     
 }

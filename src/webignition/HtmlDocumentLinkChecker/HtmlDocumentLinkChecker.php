@@ -3,6 +3,19 @@ namespace webignition\HtmlDocumentLinkChecker;
 
 class HtmlDocumentLinkChecker {   
     
+    
+    const URL_SCHEME_MAILTO = 'mailto';
+    
+    
+    /**
+     *
+     * @var array
+     */
+    private $schemesToExclude = array(
+        self::URL_SCHEME_MAILTO
+    );
+    
+    
     /**
      *
      * @var \Guzzle\Http\Client 
@@ -192,21 +205,34 @@ class HtmlDocumentLinkChecker {
             return;            
         }
         
-        foreach ($linkFinder->getAll() as $link) {            
-            $request = $this->getHttpClient()->head($link['url']);
-            
-            try {
+        foreach ($linkFinder->getAll() as $link) { 
+            if ($this->isUrlToBeIncluded($link['url'])) {
+                $request = $this->getHttpClient()->head($link['url']);
+
                 try {
-                    $response = $request->send();
-                } catch (\Guzzle\Http\Exception\BadResponseException $badResponseException) {
-                    $response = $badResponseException->getResponse();
-                }
-                
-                $this->linkStates[] = new LinkState(LinkState::TYPE_HTTP, $response->getStatusCode(), $link['url'], $link['element']);
-            } catch (\Guzzle\Http\Exception\CurlException $curlException) {                               
-                $this->linkStates[] = new LinkState(LinkState::TYPE_CURL, $curlException->getErrorNo(), $link['url'], $link['element']);           
-            }          
+                    try {
+                        $response = $request->send();
+                    } catch (\Guzzle\Http\Exception\BadResponseException $badResponseException) {
+                        $response = $badResponseException->getResponse();
+                    }
+
+                    $this->linkStates[] = new LinkState(LinkState::TYPE_HTTP, $response->getStatusCode(), $link['url'], $link['element']);
+                } catch (\Guzzle\Http\Exception\CurlException $curlException) {                               
+                    $this->linkStates[] = new LinkState(LinkState::TYPE_CURL, $curlException->getErrorNo(), $link['url'], $link['element']);           
+                }                 
+            }
         }
-    }   
+    }
+    
+    
+    /**
+     * 
+     * @param string $url
+     * @return boolean
+     */
+    private function isUrlToBeIncluded($url) {
+        $urlObject = new \webignition\NormalisedUrl\NormalisedUrl($url);
+        return !in_array($urlObject->getScheme(), $this->schemesToExclude);
+    }
     
 }

@@ -210,7 +210,7 @@ class GetLinkStatesTest extends BaseTest {
         $checker->setWebPage($webPage);
         $checker->setHttpClient($this->getHttpClient());
         
-        $this->assertEquals(31, count($checker->getAll()));
+        $this->assertEquals(30, count($checker->getAll()));
     }    
     
     
