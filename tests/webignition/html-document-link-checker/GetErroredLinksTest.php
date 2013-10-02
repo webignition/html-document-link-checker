@@ -28,11 +28,15 @@ class GetErroredLinksTest extends BaseTest {
         $this->loadHttpClientFixtures(array(
             'HTTP/1.1 200 Ok',
             'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 404 Not Found',
             'HTTP/1.1 500 Internal Server Error',
+            'HTTP/1.1 500 Internal Server Error',
+            'HTTP/1.1 410 Gone',
             'HTTP/1.1 410 Gone',
             'HTTP/1.1 200 Ok',
             'HTTP/1.1 200 Ok',
             'HTTP/1.1 200 Ok',
+            'HTTP/1.1 400 Bad Request',
             'HTTP/1.1 400 Bad Request',
             'HTTP/1.1 200 Ok',
             'HTTP/1.1 200 Ok',
@@ -53,7 +57,7 @@ class GetErroredLinksTest extends BaseTest {
             new LinkState('http', 500, 'http://example.com/protocol-relative-same-host', '<a href="//example.com/protocol-relative-same-host">Protocol Relative Same Host</a>'),
             new LinkState('http', 410, 'http://another.example.com/protocol-relative-same-host', '<a href="//another.example.com/protocol-relative-same-host">Protocol Relative Different Host</a>'),
             new LinkState('http', 400, 'http://example.com/images/youtube.png', '<img src="/images/youtube.png">'),
-        ), $checker->getErrored());      
+        ), $checker->getErrored());
     }
     
     
@@ -113,7 +117,10 @@ class GetErroredLinksTest extends BaseTest {
             'HTTP/1.1 200 Ok',
             $curl28Exception,
             'HTTP/1.1 500 Internal Server Error',
+            'HTTP/1.1 500 Internal Server Error',
             'HTTP/1.1 400 Bad Request',
+            'HTTP/1.1 400 Bad Request',
+            'HTTP/1.1 404 Not Found', 
             'HTTP/1.1 404 Not Found', 
             $curl55Exception,
             'HTTP/1.1 200 Ok',
@@ -191,5 +198,22 @@ class GetErroredLinksTest extends BaseTest {
         $checker->setHttpClient($this->getHttpClient());
         
         $this->assertEquals(array(), $checker->getErrored());
-    }        
+    }
+    
+    public function testRetryOn404() {
+        $this->loadHttpClientFixtures(array(
+            'HTTP/1.1 404',
+            'HTTP/1.1 200 Ok'
+        ));
+        
+        $webPage = new WebPage();
+        $webPage->setUrl('http://example.com');
+        $webPage->setContent($this->getHtmlDocumentFixture('example06'));
+        
+        $checker = new HtmlDocumentLinkChecker();
+        $checker->setWebPage($webPage);
+        $checker->setHttpClient($this->getHttpClient());
+        
+        $this->assertEquals(array(), $checker->getErrored());
+    }
 }

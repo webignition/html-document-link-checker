@@ -25,16 +25,6 @@ class HtmlDocumentLinkChecker {
      *
      * @var array
      */
-    private $httpStatusCodesToRetry = array(
-        self::HTTP_STATUS_CODE_METHOD_NOT_ALLOWED,
-        self::HTTP_STATUS_CODE_NOT_IMPLEMENTED
-    );
-    
-    
-    /**
-     *
-     * @var array
-     */
     private $schemesToExclude = array(
         self::URL_SCHEME_MAILTO        
     );
@@ -250,7 +240,7 @@ class HtmlDocumentLinkChecker {
                 $isLastMethod = $methodIndex == count($this->httpMethodList) - 1;            
                 $response = $this->getResponseForHttpMethod($url, $method);
 
-                if (!$response->isError() || $isLastMethod || !in_array($response->getStatusCode(), $this->httpStatusCodesToRetry)) {
+                if (!$response->isError() || $isLastMethod) {
                     return new LinkState(LinkState::TYPE_HTTP, $response->getStatusCode(), $url, '');
                 }
             }            

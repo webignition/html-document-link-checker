@@ -28,16 +28,25 @@ class GetWorkingLinksTest extends BaseTest {
         $this->loadHttpClientFixtures(array(
             'HTTP/1.1 200 Ok',
             'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 404 Not Found',
             'HTTP/1.1 500 Internal Server Error',
+            'HTTP/1.1 500 Internal Server Error',
+            'HTTP/1.1 410 Gone',
             'HTTP/1.1 410 Gone',
             'HTTP/1.1 200 Ok',
             'HTTP/1.1 200 Ok',
             'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 400 Bad Request',
             'HTTP/1.1 400 Bad Request',
             'HTTP/1.1 404 Not Found',
             'HTTP/1.1 404 Not Found',
             'HTTP/1.1 404 Not Found',
             'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 404 Not Found',            
         ));
         
         $webPage = new WebPage();
@@ -109,7 +118,10 @@ class GetWorkingLinksTest extends BaseTest {
             'HTTP/1.1 200 Ok',
             $curl28Exception,
             'HTTP/1.1 500 Internal Server Error',
+            'HTTP/1.1 500 Internal Server Error',
             'HTTP/1.1 400 Bad Request',
+            'HTTP/1.1 400 Bad Request',
+            'HTTP/1.1 404 Not Found', 
             'HTTP/1.1 404 Not Found', 
             $curl55Exception,
             'HTTP/1.1 200 Ok',
@@ -117,6 +129,10 @@ class GetWorkingLinksTest extends BaseTest {
             'HTTP/1.1 404 Not Found',
             'HTTP/1.1 404 Not Found',
             'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 404 Not Found',            
         ));      
         
         $webPage = new WebPage();
