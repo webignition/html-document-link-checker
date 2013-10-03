@@ -48,7 +48,14 @@ class HtmlDocumentLinkChecker {
      *
      * @var array
      */
-    private $linkStates = null;
+    private $linkCheckResults = null;
+    
+    
+    /**
+     *
+     * @var array
+     */
+    private $urlToLinkStateMap = array();
     
     
     /**
@@ -79,7 +86,7 @@ class HtmlDocumentLinkChecker {
      */
     public function setWebPage(\webignition\WebResource\WebPage\WebPage $webPage) {
         $this->webPage = $webPage;
-        $this->linkStates = null;
+        $this->linkCheckResults = null;
     }
     
     
@@ -88,30 +95,30 @@ class HtmlDocumentLinkChecker {
      * @return array
      */
     public function getAll() {
-        if (is_null($this->linkStates)) {
-            $this->checkLinkStates();
+        if (is_null($this->linkCheckResults)) {
+            $this->linkCheckResults = array();            
+            
+            if (is_null($this->webPage)) {
+                return $this->linkCheckResults;
+            }
+
+            $linkFinder = new \webignition\HtmlDocumentLinkUrlFinder\HtmlDocumentLinkUrlFinder();
+
+            $linkFinder->setSourceUrl($this->webPage->getUrl());
+            $linkFinder->setSourceContent($this->webPage->getContent());
+
+            if (!$linkFinder->hasUrls()) {
+                return $this->linkCheckResults;          
+            }
+
+            foreach ($linkFinder->getAll() as $link) {             
+                if ($this->isUrlToBeIncluded($link['url'])) {
+                    $this->linkCheckResults[] = new LinkCheckResult($link['url'], $link['element'], $this->getLinkState($link['url']));
+                }
+            }
         }
         
-        return $this->linkStates;
-    } 
-    
-    
-    /**
-     * 
-     * @param int $statusCode
-     * @return array
-     */
-    public function getByHttpState($statusCode) {
-        return $this->getLinksByLinkState(LinkState::TYPE_HTTP, $statusCode);       
-    }
-    
-    /**
-     * 
-     * @param int $statusCode
-     * @return array
-     */    
-    public function getByCurlState($curlCode) {
-        return $this->getLinksByLinkState(LinkState::TYPE_CURL, $curlCode);       
+        return $this->linkCheckResults;
     }
     
     
@@ -120,13 +127,11 @@ class HtmlDocumentLinkChecker {
      * @return array
      */
     public function getErrored() {
-        $curlStateLinks = $this->getLinksByType(LinkState::TYPE_CURL);
-        $httpStateLinks = $this->getLinksByType(LinkState::TYPE_HTTP);
-
-        $links = $curlStateLinks;
-        foreach ($httpStateLinks as $linkState) {
-            if ($this->isHttpErrorStatusCode($linkState->getState())) {
-                $links[] = $linkState;
+        $links = array();
+        foreach ($this->getAll() as $linkCheckResult) {
+            /* @var $linkCheckResult LinkCheckResult */
+            if ($this->isErrored($linkCheckResult)) {
+                $links[] = $linkCheckResult;
             }
         }
         
@@ -136,19 +141,36 @@ class HtmlDocumentLinkChecker {
     
     /**
      * 
+     * @param \webignition\HtmlDocumentLinkChecker\LinkCheckResult $linkCheckResult
+     * @return boolean
+     */
+    private function isErrored(LinkCheckResult $linkCheckResult) {        
+        if ($linkCheckResult->getLinkState()->getType() == LinkState::TYPE_CURL) {
+            return true;
+        }
+        
+        if ($linkCheckResult->getLinkState()->getType() == LinkState::TYPE_HTTP && $this->isHttpErrorStatusCode($linkCheckResult->getLinkState()->getState())) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    
+    /**
+     * 
      * @return array
      */
     public function getWorking() {
-        $httpStateLinks = $this->getLinksByType(LinkState::TYPE_HTTP);
-        
         $links = array();
-        foreach ($httpStateLinks as $linkState) {
-            if (!$this->isHttpErrorStatusCode($linkState->getState())) {
-                $links[] = $linkState;
+        foreach ($this->getAll() as $linkCheckResult) {
+            /* @var $linkCheckResult LinkCheckResult */
+            if (!$this->isErrored($linkCheckResult)) {
+                $links[] = $linkCheckResult;
             }
         }
         
-        return $links;        
+        return $links;       
     }
     
     
@@ -203,29 +225,18 @@ class HtmlDocumentLinkChecker {
     }
     
     
-    private function checkLinkStates() {
-        if (is_null($this->webPage)) {
-            $this->linkStates = array();
-            return;
+    /**
+     * 
+     * @param string $url
+     * @return \webignition\HtmlDocumentLinkChecker\LinkState
+     */
+    private function getLinkState($url) {
+        if (!$this->hasLinkStateForUrl($url)) {
+            $linkState = $this->deriveLinkState($url);            
+            $this->urlToLinkStateMap[$url] = $linkState;
         }
         
-        $linkFinder = new \webignition\HtmlDocumentLinkUrlFinder\HtmlDocumentLinkUrlFinder();
-        
-        $linkFinder->setSourceUrl($this->webPage->getUrl());
-        $linkFinder->setSourceContent($this->webPage->getContent());
-        
-        if (!$linkFinder->hasUrls()) {
-            $this->linkStates = array();
-            return;            
-        }
-        
-        foreach ($linkFinder->getAll() as $link) { 
-            if ($this->isUrlToBeIncluded($link['url'])) {                
-                $linkState = $this->getLinkState($link['url']);
-                $linkState->setContext($link['element']);                
-                $this->linkStates[] = $linkState;
-            }
-        }
+        return $this->urlToLinkStateMap[$url];      
     }
     
     
@@ -234,19 +245,30 @@ class HtmlDocumentLinkChecker {
      * @param string $url
      * @return \webignition\HtmlDocumentLinkChecker\LinkState
      */
-    private function getLinkState($url) {
+    private function deriveLinkState($url) {
         try {
             foreach ($this->httpMethodList as $methodIndex => $method) {
                 $isLastMethod = $methodIndex == count($this->httpMethodList) - 1;            
                 $response = $this->getResponseForHttpMethod($url, $method);
 
                 if (!$response->isError() || $isLastMethod) {
-                    return new LinkState(LinkState::TYPE_HTTP, $response->getStatusCode(), $url, '');
+                    return new LinkState(LinkState::TYPE_HTTP, $response->getStatusCode());
                 }
             }            
         } catch (\Guzzle\Http\Exception\CurlException $curlException) {
-            return new LinkState(LinkState::TYPE_CURL, $curlException->getErrorNo(), $url, '');
-        }       
+            return new LinkState(LinkState::TYPE_CURL, $curlException->getErrorNo());
+        }         
+    }
+    
+    
+    
+    /**
+     * 
+     * @param string $url
+     * @return boolean
+     */
+    private function hasLinkStateForUrl($url) {
+        return isset($this->urlToLinkStateMap[$url]);
     }
     
     
