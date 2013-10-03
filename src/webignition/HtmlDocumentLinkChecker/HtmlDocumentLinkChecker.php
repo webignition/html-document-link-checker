@@ -59,6 +59,13 @@ class HtmlDocumentLinkChecker {
     
     
     /**
+     *
+     * @var array
+     */
+    private $urlsToExclude = array();
+    
+    
+    /**
      * 
      * @param \Guzzle\Http\Client $httpClient
      */
@@ -86,7 +93,16 @@ class HtmlDocumentLinkChecker {
      */
     public function setWebPage(\webignition\WebResource\WebPage\WebPage $webPage) {
         $this->webPage = $webPage;
-        $this->linkCheckResults = null;
+        $this->linkCheckResults = null;        
+    }
+    
+    
+    /**
+     * 
+     * @param array $urlsToExclude
+     */
+    public function setUrlsToExclude($urlsToExclude) {
+        $this->urlsToExclude = $urlsToExclude;
     }
     
     
@@ -184,47 +200,6 @@ class HtmlDocumentLinkChecker {
     }
     
     
-    
-    
-    /**
-     * 
-     * @param string $type
-     * @return array
-     */
-    private function getLinksByType($type) {
-        $linkStates = $this->getAll();
-        $links = array();
-        
-        foreach ($linkStates as $url => $linkState) {
-            if ($linkState->getType() == $type) {
-                $links[] = $linkState;
-            }
-        }
-        
-        return $links;
-    }
-
-    
-    /**
-     * 
-     * @return array
-     */
-    private function getLinksByLinkState($type, $state) {
-        $linkStates = $this->getAll();
-        $links = array();
-        
-        foreach ($linkStates as $linkState) {
-            /* @var $linkState LinkState */
-            
-            if ($linkState->getType() == $type && $linkState->getState() == $state) {
-                $links[] = $linkState;
-            }
-        }
-        
-        return $links;          
-    }
-    
-    
     /**
      * 
      * @param string $url
@@ -298,6 +273,10 @@ class HtmlDocumentLinkChecker {
     private function isUrlToBeIncluded($url) {        
         $urlObject = new \webignition\NormalisedUrl\NormalisedUrl($url);             
         if (!$this->isUrlSchemeToBeIncluded($urlObject)) {
+            return false;
+        }
+        
+        if (in_array($url, $this->urlsToExclude)) {
             return false;
         }
         
