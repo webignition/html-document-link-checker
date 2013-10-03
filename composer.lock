@@ -194,21 +194,21 @@
         },
         {
             "name": "webignition/absolute-url-deriver",
-            "version": "1.3.6",
+            "version": "1.3.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webignition/absolute-url-deriver.git",
-                "reference": "a2993cffcde8f2e5a4449204c8284063fb56c87e"
+                "reference": "3212e24d98a2ced54d245f71e11c59b5e47ea9b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webignition/absolute-url-deriver/zipball/a2993cffcde8f2e5a4449204c8284063fb56c87e",
-                "reference": "a2993cffcde8f2e5a4449204c8284063fb56c87e",
+                "url": "https://api.github.com/repos/webignition/absolute-url-deriver/zipball/3212e24d98a2ced54d245f71e11c59b5e47ea9b6",
+                "reference": "3212e24d98a2ced54d245f71e11c59b5e47ea9b6",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.0",
-                "webignition/url": ">=1.7.2"
+                "webignition/url": ">=1.9.3"
             },
             "type": "library",
             "autoload": {
@@ -232,25 +232,25 @@
                 "absolute",
                 "url"
             ],
-            "time": "2013-10-01 18:05:41"
+            "time": "2013-10-03 11:28:29"
         },
         {
             "name": "webignition/html-document-link-finder",
-            "version": "0.4",
+            "version": "0.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webignition/html-document-link-url-finder.git",
-                "reference": "e38eaa551b31dd81297f9766bab3303e739d2fca"
+                "reference": "ad753650c825941346e2e28d9dcc99a26ce9df4f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webignition/html-document-link-url-finder/zipball/e38eaa551b31dd81297f9766bab3303e739d2fca",
-                "reference": "e38eaa551b31dd81297f9766bab3303e739d2fca",
+                "url": "https://api.github.com/repos/webignition/html-document-link-url-finder/zipball/ad753650c825941346e2e28d9dcc99a26ce9df4f",
+                "reference": "ad753650c825941346e2e28d9dcc99a26ce9df4f",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.0",
-                "webignition/absolute-url-deriver": ">=1.3.5",
+                "webignition/absolute-url-deriver": ">=1.3.7",
                 "webignition/url": "*"
             },
             "type": "library",
@@ -277,7 +277,7 @@
                 "linkifier",
                 "validation"
             ],
-            "time": "2013-10-02 07:36:59"
+            "time": "2013-10-03 11:31:02"
         },
         {
             "name": "webignition/internet-media-type",
@@ -409,16 +409,16 @@
         },
         {
             "name": "webignition/url",
-            "version": "1.9.1",
+            "version": "1.9.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webignition/url.git",
-                "reference": "1b2f059b2b5a3fc8427596eea5453245e3df338b"
+                "reference": "c93cae6c5d5fc8fe4834877a697bc9764c365045"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webignition/url/zipball/1b2f059b2b5a3fc8427596eea5453245e3df338b",
-                "reference": "1b2f059b2b5a3fc8427596eea5453245e3df338b",
+                "url": "https://api.github.com/repos/webignition/url/zipball/c93cae6c5d5fc8fe4834877a697bc9764c365045",
+                "reference": "c93cae6c5d5fc8fe4834877a697bc9764c365045",
                 "shasum": ""
             },
             "require": {
@@ -446,7 +446,7 @@
             "keywords": [
                 "url"
             ],
-            "time": "2013-09-13 10:21:21"
+            "time": "2013-10-03 10:01:18"
         },
         {
             "name": "webignition/web-page-model",

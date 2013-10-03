@@ -262,7 +262,7 @@ class HtmlDocumentLinkChecker {
             $response = $request->send();
         } catch (\Guzzle\Http\Exception\BadResponseException $badResponseException) {
             $response = $badResponseException->getResponse();                            
-        }
+        }        
         
         return $response;
     }
@@ -273,9 +273,23 @@ class HtmlDocumentLinkChecker {
      * @param string $url
      * @return boolean
      */
-    private function isUrlToBeIncluded($url) {
-        $urlObject = new \webignition\NormalisedUrl\NormalisedUrl($url);
-        return !in_array($urlObject->getScheme(), $this->schemesToExclude);
-    }    
+    private function isUrlToBeIncluded($url) {        
+        $urlObject = new \webignition\NormalisedUrl\NormalisedUrl($url);             
+        if (!$this->isUrlSchemeToBeIncluded($urlObject)) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    
+    /**
+     * 
+     * @param \webignition\NormalisedUrl\NormalisedUrl $url
+     * @return boolean
+     */
+    private function isUrlSchemeToBeIncluded(\webignition\NormalisedUrl\NormalisedUrl $url) {
+        return !in_array($url->getScheme(), $this->schemesToExclude);
+    }
     
 }
