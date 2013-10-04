@@ -87,7 +87,27 @@ class HtmlDocumentLinkChecker {
             $this->httpClient = new \Guzzle\Http\Client();
         }
         
+        if (is_null($this->getHttpClientHistory())) {
+            $this->httpClient->addSubscriber(new \Guzzle\Plugin\History\HistoryPlugin());
+        }
+        
         return $this->httpClient;
+    }
+    
+    
+    /**
+     * 
+     * @return \Guzzle\Plugin\History\HistoryPlugin
+     */
+    private function getHttpClientHistory() {
+        $requestSentListeners = $this->httpClient->getEventDispatcher()->getListeners('request.sent');
+        foreach ($requestSentListeners as $requestSentListener) {
+            if ($requestSentListener[0] instanceof \Guzzle\Plugin\History\HistoryPlugin) {
+                return $requestSentListener[0];
+            }
+        }
+        
+        return null;
     }
     
     
@@ -131,7 +151,7 @@ class HtmlDocumentLinkChecker {
                 return $this->linkCheckResults;          
             }
 
-            foreach ($linkFinder->getAll() as $link) {             
+            foreach ($linkFinder->getAll() as $link) {                             
                 if ($this->isUrlToBeIncluded($link['url'])) {
                     $this->linkCheckResults[] = new LinkCheckResult($link['url'], $link['element'], $this->getLinkState($link['url']));
                 }
@@ -200,7 +220,7 @@ class HtmlDocumentLinkChecker {
      * @return boolean
      */
     private function isHttpErrorStatusCode($statusCode) {        
-        return in_array(substr((string)$statusCode, 0, 1), array('4', '5'));
+        return in_array(substr((string)$statusCode, 0, 1), array('3', '4', '5'));
     }
     
     
@@ -224,7 +244,7 @@ class HtmlDocumentLinkChecker {
      * @param string $url
      * @return \webignition\HtmlDocumentLinkChecker\LinkState
      */
-    private function deriveLinkState($url) {
+    private function deriveLinkState($url) {        
         try {
             foreach ($this->httpMethodList as $methodIndex => $method) {
                 $isLastMethod = $methodIndex == count($this->httpMethodList) - 1;            
@@ -261,11 +281,13 @@ class HtmlDocumentLinkChecker {
         try {
             $request = $this->getHttpClient()->createRequest($method, $url);
             $response = $request->send();
+        } catch (\Guzzle\Http\Exception\TooManyRedirectsException $tooManyRedirectsException) {
+            $response = $this->getHttpClientHistory()->getLastResponse();
         } catch (\Guzzle\Http\Exception\BadResponseException $badResponseException) {
             $response = $badResponseException->getResponse();                            
-        }        
+        }
         
-        return $response;
+        return $response;      
     }
     
     
