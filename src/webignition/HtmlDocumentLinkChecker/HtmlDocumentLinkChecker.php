@@ -4,11 +4,14 @@ namespace webignition\HtmlDocumentLinkChecker;
 class HtmlDocumentLinkChecker {           
     
     const URL_SCHEME_MAILTO = 'mailto';
+    const URL_ABOUT_ABOUT = 'about';
     const HTTP_STATUS_CODE_METHOD_NOT_ALLOWED = 405;
     const HTTP_STATUS_CODE_NOT_IMPLEMENTED = 501;
     
     const HTTP_METHOD_HEAD = 'HEAD';
     const HTTP_METHOD_GET = 'GET';
+    
+
     
     
     /**
@@ -26,7 +29,8 @@ class HtmlDocumentLinkChecker {
      * @var array
      */
     private $schemesToExclude = array(
-        self::URL_SCHEME_MAILTO        
+        self::URL_SCHEME_MAILTO,
+        self::URL_ABOUT_ABOUT
     );
     
     
@@ -271,7 +275,7 @@ class HtmlDocumentLinkChecker {
      * @return boolean
      */
     private function isUrlToBeIncluded($url) {        
-        $urlObject = new \webignition\NormalisedUrl\NormalisedUrl($url);             
+        $urlObject = new \webignition\NormalisedUrl\NormalisedUrl($url);                    
         if (!$this->isUrlSchemeToBeIncluded($urlObject)) {
             return false;
         }
