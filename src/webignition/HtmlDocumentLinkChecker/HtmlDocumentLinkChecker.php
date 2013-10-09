@@ -4,7 +4,8 @@ namespace webignition\HtmlDocumentLinkChecker;
 class HtmlDocumentLinkChecker {           
     
     const URL_SCHEME_MAILTO = 'mailto';
-    const URL_ABOUT_ABOUT = 'about';
+    const URL_SCHEME_ABOUT = 'about';
+    const URL_SCEME_JAVASCRIPT = 'javascript';
     const HTTP_STATUS_CODE_METHOD_NOT_ALLOWED = 405;
     const HTTP_STATUS_CODE_NOT_IMPLEMENTED = 501;
     
@@ -34,7 +35,8 @@ class HtmlDocumentLinkChecker {
      */
     private $schemesToExclude = array(
         self::URL_SCHEME_MAILTO,
-        self::URL_ABOUT_ABOUT
+        self::URL_SCHEME_ABOUT,
+        self::URL_SCEME_JAVASCRIPT
     );
     
     
