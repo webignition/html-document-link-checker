@@ -71,6 +71,15 @@ class HtmlDocumentLinkChecker {
     
     /**
      * 
+     * @param array $httpMethodList
+     */
+    public function getHttpMethodList($httpMethodList) {
+        $this->httpMethodList = $httpMethodList;
+    }
+    
+    
+    /**
+     * 
      * @param \Guzzle\Http\Client $httpClient
      */
     public function setHttpClient(\Guzzle\Http\Client $httpClient) {
@@ -256,7 +265,7 @@ class HtmlDocumentLinkChecker {
             }            
         } catch (\Guzzle\Http\Exception\CurlException $curlException) {
             return new LinkState(LinkState::TYPE_CURL, $curlException->getErrorNo());
-        }         
+        }
     }
     
     
