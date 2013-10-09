@@ -11,7 +11,11 @@ class HtmlDocumentLinkChecker {
     const HTTP_METHOD_HEAD = 'HEAD';
     const HTTP_METHOD_GET = 'GET';
     
-
+    /**
+     *
+     * @var array
+     */
+    private $userAgents = array();
     
     
     /**
@@ -75,6 +79,15 @@ class HtmlDocumentLinkChecker {
      */
     public function setHttpMethodList($httpMethodList) {
         $this->httpMethodList = $httpMethodList;
+    }
+    
+    
+    /**
+     * 
+     * @param array $userAgents
+     */
+    public function setUserAgents($userAgents) {
+        $this->userAgents = $userAgents;
     }
     
     
@@ -287,16 +300,37 @@ class HtmlDocumentLinkChecker {
      * @return \Guzzle\Http\Message\Response
      */
     private function getResponseForHttpMethod($url, $method) {
-        try {
-            $request = $this->getHttpClient()->createRequest($method, $url);
-            $response = $request->send();
-        } catch (\Guzzle\Http\Exception\TooManyRedirectsException $tooManyRedirectsException) {
-            $response = $this->getHttpClientHistory()->getLastResponse();
-        } catch (\Guzzle\Http\Exception\BadResponseException $badResponseException) {
-            $response = $badResponseException->getResponse();                            
+        $request = $this->getHttpClient()->createRequest($method, $url);
+        $userAgentSelection = $this->getUserAgentSelectionForRequest($request);
+        
+        foreach ($userAgentSelection as $userAgentIndex => $userAgent) {
+            $isLastUserAgent = $userAgentIndex == count($userAgentSelection) - 1;
+            
+            try {
+                $request->setHeader('user-agent', $userAgent);
+                return $request->send();
+            } catch (\Guzzle\Http\Exception\TooManyRedirectsException $tooManyRedirectsException) {
+                return $this->getHttpClientHistory()->getLastResponse();
+            } catch (\Guzzle\Http\Exception\BadResponseException $badResponseException) {                
+                if ($isLastUserAgent) {
+                    return $badResponseException->getResponse();
+                }                          
+            }            
+        }    
+    }
+    
+    
+    /**
+     * 
+     * @param \Guzzle\Http\Message\Request $request
+     * @return array
+     */
+    private function getUserAgentSelectionForRequest(\Guzzle\Http\Message\Request $request) {
+        if (count($this->userAgents)) {
+            return $this->userAgents;
         }
         
-        return $response;      
+        return $request->getHeader('User-Agent')->toArray();     
     }
     
     
