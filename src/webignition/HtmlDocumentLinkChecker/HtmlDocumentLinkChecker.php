@@ -73,7 +73,7 @@ class HtmlDocumentLinkChecker {
      * 
      * @param array $httpMethodList
      */
-    public function getHttpMethodList($httpMethodList) {
+    public function setHttpMethodList($httpMethodList) {
         $this->httpMethodList = $httpMethodList;
     }
     
