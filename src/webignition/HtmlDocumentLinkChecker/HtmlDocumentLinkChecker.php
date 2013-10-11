@@ -194,7 +194,7 @@ class HtmlDocumentLinkChecker {
         $links = array();
         foreach ($this->getAll() as $linkCheckResult) {
             /* @var $linkCheckResult LinkCheckResult */
-            if ($this->isErrored($linkCheckResult)) {
+            if ($this->isErrored($linkCheckResult->getLinkState())) {
                 $links[] = $linkCheckResult;
             }
         }
@@ -205,15 +205,15 @@ class HtmlDocumentLinkChecker {
     
     /**
      * 
-     * @param \webignition\HtmlDocumentLinkChecker\LinkCheckResult $linkCheckResult
+     * @param \webignition\HtmlDocumentLinkChecker\LinkState $linkState
      * @return boolean
      */
-    private function isErrored(LinkCheckResult $linkCheckResult) {        
-        if ($linkCheckResult->getLinkState()->getType() == LinkState::TYPE_CURL) {
+    private function isErrored(LinkState $linkState) {        
+        if ($linkState->getType() == LinkState::TYPE_CURL) {
             return true;
         }
         
-        if ($linkCheckResult->getLinkState()->getType() == LinkState::TYPE_HTTP && $this->isHttpErrorStatusCode($linkCheckResult->getLinkState()->getState())) {
+        if ($linkState->getType() == LinkState::TYPE_HTTP && $this->isHttpErrorStatusCode($linkState->getState())) {
             return true;
         }
         
@@ -229,7 +229,7 @@ class HtmlDocumentLinkChecker {
         $links = array();
         foreach ($this->getAll() as $linkCheckResult) {
             /* @var $linkCheckResult LinkCheckResult */
-            if (!$this->isErrored($linkCheckResult)) {
+            if (!$this->isErrored($linkCheckResult->getLinkState())) {
                 $links[] = $linkCheckResult;
             }
         }
@@ -254,12 +254,17 @@ class HtmlDocumentLinkChecker {
      * @return \webignition\HtmlDocumentLinkChecker\LinkState
      */
     private function getLinkState($url) {
-        if (!$this->hasLinkStateForUrl($url)) {
-            $linkState = $this->deriveLinkState($url);            
+        if ($this->hasLinkStateForUrl($url)) {
+            return $this->urlToLinkStateMap[$url];
+        }        
+
+        $linkState = $this->deriveLinkState($url);
+
+        if (!$this->isErrored($linkState)) {
             $this->urlToLinkStateMap[$url] = $linkState;
         }
-        
-        return $this->urlToLinkStateMap[$url];      
+
+        return $linkState;
     }
     
     
