@@ -301,15 +301,17 @@ class HtmlDocumentLinkChecker {
      * @param string $method
      * @return \Guzzle\Http\Message\Response
      */
-    private function getResponseForHttpMethod($url, $method) {
-        $request = $this->getHttpClient()->createRequest($method, $url);
-        $userAgentSelection = $this->getUserAgentSelectionForRequest($request);
+    private function getResponseForHttpMethod($url, $method) {        
+        $request = $this->getHttpClient()->createRequest($method, $url, array(
+            'Referer' => $this->webPage->getUrl()
+        ));
+        $userAgentSelection = $this->getUserAgentSelectionForRequest($request);        
         
         foreach ($userAgentSelection as $userAgentIndex => $userAgent) {
             $isLastUserAgent = $userAgentIndex == count($userAgentSelection) - 1;
+            $request->setHeader('user-agent', $userAgent);
             
-            try {
-                $request->setHeader('user-agent', $userAgent);
+            try {                
                 return $request->send();
             } catch (\Guzzle\Http\Exception\TooManyRedirectsException $tooManyRedirectsException) {
                 return $this->getHttpClientHistory()->getLastResponse();
