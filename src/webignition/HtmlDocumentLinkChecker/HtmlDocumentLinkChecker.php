@@ -12,6 +12,9 @@ class HtmlDocumentLinkChecker {
     const HTTP_METHOD_HEAD = 'HEAD';
     const HTTP_METHOD_GET = 'GET';
     
+    const CURL_MALFORMED_URL_CODE = 3;
+    const CURL_MALFORMED_URL_MESSAGE = 'The URL was not properly formatted.';
+    
     /**
      *
      * @var array
@@ -324,8 +327,24 @@ class HtmlDocumentLinkChecker {
                 if ($isLastUserAgent) {
                     return $badResponseException->getResponse();
                 }                          
+            } catch (\Guzzle\Common\Exception\InvalidArgumentException $e) {
+                if (substr_count($e->getMessage(), 'unable to parse malformed url')) {
+                    $curlException = $this->getCurlMalformedUrlException();
+                    throw $curlException;
+                }
             }            
         }    
+    }
+    
+    
+    /**
+     * 
+     * @return \Guzzle\Http\Exception\CurlException
+     */
+    private function getCurlMalformedUrlException() {
+        $curlException = new \Guzzle\Http\Exception\CurlException();
+        $curlException->setError(self::CURL_MALFORMED_URL_MESSAGE, self::CURL_MALFORMED_URL_CODE);
+        return $curlException;
     }
     
     
