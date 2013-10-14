@@ -9,10 +9,14 @@ use webignition\WebResource\WebPage\WebPage;
 
 class DontReuseFailedLinkStateTest extends BaseTest {
     
-    public function testReuseLinkState() {
+    public function testReuseLinkState() {        
         $this->loadHttpClientFixtures(array(
             'HTTP/1.1 500 Internal Server Error',
             'HTTP/1.1 500 Internal Server Error',
+            'HTTP/1.1 500 Internal Server Error',
+            'HTTP/1.1 500 Internal Server Error',
+            'HTTP/1.1 500 Internal Server Error',
+            'HTTP/1.1 500 Internal Server Error',            
             'HTTP/1.1 200 Ok'
         ));
         

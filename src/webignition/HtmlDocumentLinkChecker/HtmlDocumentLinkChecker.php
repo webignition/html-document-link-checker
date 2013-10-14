@@ -13,7 +13,9 @@ class HtmlDocumentLinkChecker {
     const HTTP_METHOD_GET = 'GET';
     
     const CURL_MALFORMED_URL_CODE = 3;
-    const CURL_MALFORMED_URL_MESSAGE = 'The URL was not properly formatted.';
+    const CURL_MALFORMED_URL_MESSAGE = 'The URL was not properly formatted.';   
+    
+    const BAD_REQUEST_LIMIT = 3;
     
     /**
      *
@@ -76,6 +78,13 @@ class HtmlDocumentLinkChecker {
      * @var array
      */
     private $urlsToExclude = array();
+    
+    
+    /**
+     *
+     * @var array
+     */
+    private $badRequestCount = 0;
     
     
     /**
@@ -319,21 +328,49 @@ class HtmlDocumentLinkChecker {
             $isLastUserAgent = $userAgentIndex == count($userAgentSelection) - 1;
             $request->setHeader('user-agent', $userAgent);
             
-            try {                
-                return $request->send();
-            } catch (\Guzzle\Http\Exception\TooManyRedirectsException $tooManyRedirectsException) {
-                return $this->getHttpClientHistory()->getLastResponse();
-            } catch (\Guzzle\Http\Exception\BadResponseException $badResponseException) {                
-                if ($isLastUserAgent) {
-                    return $badResponseException->getResponse();
-                }                          
-            } catch (\Guzzle\Common\Exception\InvalidArgumentException $e) {
-                if (substr_count($e->getMessage(), 'unable to parse malformed url')) {
-                    $curlException = $this->getCurlMalformedUrlException();
-                    throw $curlException;
-                }
-            }            
+            $this->badRequestCount = 0;
+            $response =  $this->getHttpResponse($request);
+            
+            if ($isLastUserAgent) {
+                return $response;
+            }           
         }    
+    }
+    
+    
+    /**
+     * 
+     * @param \Guzzle\Http\Message\Request $request
+     * @return \Guzzle\Http\Message\Response
+     */
+    private function getHttpResponse(\Guzzle\Http\Message\Request $request) {                
+        try {                
+            return $request->send();
+        } catch (\Guzzle\Http\Exception\TooManyRedirectsException $tooManyRedirectsException) {
+            return $this->getHttpClientHistory()->getLastResponse();
+        } catch (\Guzzle\Http\Exception\BadResponseException $badResponseException) {                
+            $this->badRequestCount++;
+            
+            if ($this->isBadRequestLimitReached()) {                    
+                return $badResponseException->getResponse();
+            }
+            
+            return $this->getHttpResponse($request);
+        } catch (\Guzzle\Common\Exception\InvalidArgumentException $e) {
+            if (substr_count($e->getMessage(), 'unable to parse malformed url')) {
+                $curlException = $this->getCurlMalformedUrlException();
+                throw $curlException;
+            }
+        }         
+    }
+    
+    
+    /**
+     * 
+     * @return boolean
+     */
+    private function isBadRequestLimitReached() {
+        return $this->badRequestCount > self::BAD_REQUEST_LIMIT - 1;        
     }
     
     

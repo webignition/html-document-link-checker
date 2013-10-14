@@ -10,6 +10,8 @@ class CycleUserAgentsTest extends BaseTest {
     public function testCycleUserAgentsOnError() {
         $this->loadHttpClientFixtures(array(
             'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 404 Not Found',
+            'HTTP/1.1 404 Not Found',
             'HTTP/1.1 200 Ok'         
         ));
         
