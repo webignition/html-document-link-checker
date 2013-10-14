@@ -255,6 +255,16 @@ class HtmlDocumentLinkChecker {
      * @param int $statusCode
      * @return boolean
      */
+    private function isStrictHttpErrorStatusCode($statusCode) {        
+        return in_array(substr((string)$statusCode, 0, 1), array('4', '5'));
+    }    
+    
+    
+    /**
+     * 
+     * @param int $statusCode
+     * @return boolean
+     */
     private function isHttpErrorStatusCode($statusCode) {        
         return in_array(substr((string)$statusCode, 0, 1), array('3', '4', '5'));
     }
@@ -331,11 +341,16 @@ class HtmlDocumentLinkChecker {
             $this->badRequestCount = 0;
             $response =  $this->getHttpResponse($request);
             
+            if (!$this->isStrictHttpErrorStatusCode($response->getStatusCode())) {
+                return $response;
+            }
+            
             if ($isLastUserAgent) {
                 return $response;
             }           
         }    
-    }
+    }   
+    
     
     
     /**
