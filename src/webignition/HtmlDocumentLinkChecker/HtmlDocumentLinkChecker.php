@@ -84,6 +84,13 @@ class HtmlDocumentLinkChecker {
      *
      * @var array
      */
+    private $domainsToExclude = array();
+    
+    
+    /**
+     *
+     * @var array
+     */
     private $badRequestCount = 0;
     
     
@@ -91,7 +98,7 @@ class HtmlDocumentLinkChecker {
      *
      * @var boolean
      */
-    private $retryOnBadResponse = true;    
+    private $retryOnBadResponse = true;
     
     
     /**
@@ -179,6 +186,15 @@ class HtmlDocumentLinkChecker {
      */
     public function setUrlsToExclude($urlsToExclude) {
         $this->urlsToExclude = $urlsToExclude;
+    }
+    
+    
+    /**
+     * 
+     * @param array $domainsToExclude
+     */
+    public function setDomainsToExclude($domainsToExclude) {
+        $this->domainsToExclude = $domainsToExclude;
     }
     
     
@@ -449,6 +465,10 @@ class HtmlDocumentLinkChecker {
             return false;
         }
         
+        if (!$this->isUrlDomainToBeIncluded($urlObject)) {
+            return false;
+        }
+        
         return true;
     }
     
@@ -460,6 +480,16 @@ class HtmlDocumentLinkChecker {
      */
     private function isUrlSchemeToBeIncluded(\webignition\NormalisedUrl\NormalisedUrl $url) {
         return !in_array($url->getScheme(), $this->schemesToExclude);
+    }
+    
+    
+    /**
+     * 
+     * @param \webignition\NormalisedUrl\NormalisedUrl $url
+     * @return boolean
+     */
+    private function isUrlDomainToBeIncluded(\webignition\NormalisedUrl\NormalisedUrl $url) {
+        return !in_array($url->getHost(), $this->domainsToExclude);
     }
     
 }

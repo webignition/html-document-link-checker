@@ -5,23 +5,22 @@ namespace webignition\HtmlDocumentLinkChecker\Tests;
 use webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker;
 use webignition\WebResource\WebPage\WebPage;
 
-class ExcludeUrlsTest extends BaseTest {
+class ExcludeDomainsTest extends BaseTest {
     
-    public function testExcludeDomains() {
+    public function testReuseLinkState() {
         $this->loadHttpClientFixtures(array(
             'HTTP/1.1 200 Ok'            
         ));
         
         $webPage = new WebPage();
         $webPage->setUrl('http://example.com');
-        $webPage->setContent($this->getHtmlDocumentFixture('example08'));
+        $webPage->setContent($this->getHtmlDocumentFixture('example13'));
         
         $checker = new HtmlDocumentLinkChecker();
         $checker->setWebPage($webPage);
         $checker->setHttpClient($this->getHttpClient());
-        $checker->setUrlsToExclude(array(
-            'http://example.com/foo',
-            'http://example.com/bar'
+        $checker->setDomainsToExclude(array(
+            'foo.com',
         ));
         
         $this->assertEquals(1, count($checker->getAll()));
