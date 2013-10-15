@@ -88,6 +88,22 @@ class HtmlDocumentLinkChecker {
     
     
     /**
+     *
+     * @var boolean
+     */
+    private $retryOnBadResponse = true;    
+    
+    
+    /**
+     * 
+     * @param boolean $retryOnBadResponse
+     */
+    public function setRetryOnBadResponse($retryOnBadResponse) {
+        $this->retryOnBadResponse = $retryOnBadResponse;
+    }
+    
+    
+    /**
      * 
      * @param array $httpMethodList
      */
@@ -385,6 +401,10 @@ class HtmlDocumentLinkChecker {
      * @return boolean
      */
     private function isBadRequestLimitReached() {
+        if ($this->retryOnBadResponse === false) {
+            return true;
+        }
+        
         return $this->badRequestCount > self::BAD_REQUEST_LIMIT - 1;        
     }
     
