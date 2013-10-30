@@ -9,7 +9,7 @@ use webignition\HtmlDocumentLinkChecker\LinkState;
 
 class RequestOptionsTest extends BaseTest {
     
-    public function testTest() {        
+    public function testSettingLowTimeoutCausesTimeout() {        
         $webPage = new WebPage();
         $webPage->setUrl('http://www.americanexpress.com/');
         $webPage->setContent($this->getHtmlDocumentFixture('example14'));
