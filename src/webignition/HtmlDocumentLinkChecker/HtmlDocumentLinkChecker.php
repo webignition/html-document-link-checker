@@ -17,6 +17,9 @@ class HtmlDocumentLinkChecker {
     
     const BAD_REQUEST_LIMIT = 3;
     
+    const DEFAULT_REQUEST_TIMEOUT = 10;    
+    const DEFAULT_REQUEST_CONNECT_TIMEOUT = 10;    
+    
     /**
      *
      * @var array
@@ -99,6 +102,34 @@ class HtmlDocumentLinkChecker {
      * @var boolean
      */
     private $retryOnBadResponse = true;
+    
+
+    /**
+     *
+     * @var array
+     */
+    private $requestOptions = array(
+        'timeout'         => self::DEFAULT_REQUEST_TIMEOUT,
+        'connect_timeout' => self::DEFAULT_REQUEST_CONNECT_TIMEOUT        
+    );
+    
+    
+    /**
+     * 
+     * @param array $options
+     */
+    public function setRequestOptions($options) {
+        $this->requestOptions = $options;
+    }
+    
+    
+    /**
+     * 
+     * @return array
+     */
+    public function getRequestOptions() {
+        return $this->requestOptions;
+    }
     
     
     /**
@@ -327,7 +358,7 @@ class HtmlDocumentLinkChecker {
      * @param string $url
      * @return \webignition\HtmlDocumentLinkChecker\LinkState
      */
-    private function deriveLinkState($url) {        
+    private function deriveLinkState($url) {                
         try {
             foreach ($this->httpMethodList as $methodIndex => $method) {
                 $isLastMethod = $methodIndex == count($this->httpMethodList) - 1;            
@@ -363,7 +394,8 @@ class HtmlDocumentLinkChecker {
     private function getResponseForHttpMethod($url, $method) {        
         $request = $this->getHttpClient()->createRequest($method, $url, array(
             'Referer' => $this->webPage->getUrl()
-        ));
+        ), null, $this->getRequestOptions());
+        
         $userAgentSelection = $this->getUserAgentSelectionForRequest($request);        
         
         foreach ($userAgentSelection as $userAgentIndex => $userAgent) {
