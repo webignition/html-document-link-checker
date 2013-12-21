@@ -19,6 +19,6 @@
         "guzzle/guzzle":">=3.7.2,<4",
         "webignition/web-page-model": "0.6",
         "webignition/html-document-link-finder":">=0.4.2,<1.0",
-        "webignition/url":"*"
+        "webignition/url":">=1.9.6"
     }
 }
