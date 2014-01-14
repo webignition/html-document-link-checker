@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "c9eeadc17761e4c87c2a6aa7ed7bf673",
+    "hash": "ed2d448746fea373266aff00f9d8af65",
     "packages": [
         {
             "name": "etechnika/idna-convert",
@@ -194,17 +194,17 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.4.0",
+            "version": "v2.4.1",
             "target-dir": "Symfony/Component/EventDispatcher",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/EventDispatcher.git",
-                "reference": "acd1707236f6eb96fbb8d58f63d289b72ebc2f6e"
+                "reference": "e3ba42f6a70554ed05749e61b829550f6ac33601"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/EventDispatcher/zipball/acd1707236f6eb96fbb8d58f63d289b72ebc2f6e",
-                "reference": "acd1707236f6eb96fbb8d58f63d289b72ebc2f6e",
+                "url": "https://api.github.com/repos/symfony/EventDispatcher/zipball/e3ba42f6a70554ed05749e61b829550f6ac33601",
+                "reference": "e3ba42f6a70554ed05749e61b829550f6ac33601",
                 "shasum": ""
             },
             "require": {
@@ -244,25 +244,25 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "http://symfony.com",
-            "time": "2013-12-03 14:52:22"
+            "time": "2013-12-28 08:12:03"
         },
         {
             "name": "webignition/absolute-url-deriver",
-            "version": "1.4.1",
+            "version": "1.4.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webignition/absolute-url-deriver.git",
-                "reference": "41e20da72e2e8e33c91c44403a20e486baa36692"
+                "reference": "a4095e6a6f72206041baf29db33083d88d78108a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webignition/absolute-url-deriver/zipball/41e20da72e2e8e33c91c44403a20e486baa36692",
-                "reference": "41e20da72e2e8e33c91c44403a20e486baa36692",
+                "url": "https://api.github.com/repos/webignition/absolute-url-deriver/zipball/a4095e6a6f72206041baf29db33083d88d78108a",
+                "reference": "a4095e6a6f72206041baf29db33083d88d78108a",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.0",
-                "webignition/url": ">=1.9.3"
+                "webignition/url": ">=1.9.8"
             },
             "type": "library",
             "autoload": {
@@ -286,20 +286,20 @@
                 "absolute",
                 "url"
             ],
-            "time": "2013-10-21 10:18:54"
+            "time": "2014-01-13 18:13:07"
         },
         {
             "name": "webignition/html-document-link-finder",
-            "version": "0.5",
+            "version": "0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webignition/html-document-link-url-finder.git",
-                "reference": "c0c071207256055a22c4a4ad0db368a1d1b63ff6"
+                "reference": "1be05e5dcc0fd8543584ef33b6c1b6e164bf247b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webignition/html-document-link-url-finder/zipball/c0c071207256055a22c4a4ad0db368a1d1b63ff6",
-                "reference": "c0c071207256055a22c4a4ad0db368a1d1b63ff6",
+                "url": "https://api.github.com/repos/webignition/html-document-link-url-finder/zipball/1be05e5dcc0fd8543584ef33b6c1b6e164bf247b",
+                "reference": "1be05e5dcc0fd8543584ef33b6c1b6e164bf247b",
                 "shasum": ""
             },
             "require": {
@@ -310,6 +310,7 @@
             "type": "library",
             "autoload": {
                 "psr-0": {
+                    "webignition\\Tests": "tests/",
                     "": "src/"
                 }
             },
@@ -331,7 +332,7 @@
                 "linkifier",
                 "validation"
             ],
-            "time": "2013-10-16 08:23:00"
+            "time": "2014-01-14 12:46:50"
         },
         {
             "name": "webignition/internet-media-type",
@@ -463,16 +464,16 @@
         },
         {
             "name": "webignition/url",
-            "version": "1.9.6",
+            "version": "1.9.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webignition/url.git",
-                "reference": "9cf53198c2d148b4069a373da65d3ff933580eb3"
+                "reference": "ad988e7e5a4eed333b055bba0aac8409137c397c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webignition/url/zipball/9cf53198c2d148b4069a373da65d3ff933580eb3",
-                "reference": "9cf53198c2d148b4069a373da65d3ff933580eb3",
+                "url": "https://api.github.com/repos/webignition/url/zipball/ad988e7e5a4eed333b055bba0aac8409137c397c",
+                "reference": "ad988e7e5a4eed333b055bba0aac8409137c397c",
                 "shasum": ""
             },
             "require": {
@@ -501,7 +502,7 @@
             "keywords": [
                 "url"
             ],
-            "time": "2013-12-20 13:32:17"
+            "time": "2014-01-13 18:09:20"
         },
         {
             "name": "webignition/web-page-model",
