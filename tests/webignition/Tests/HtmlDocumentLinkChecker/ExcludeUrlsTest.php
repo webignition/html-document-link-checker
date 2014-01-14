@@ -2,7 +2,6 @@
 
 namespace webignition\Tests\HtmlDocumentLinkChecker;
 
-use webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker;
 use webignition\WebResource\WebPage\WebPage;
 
 class ExcludeUrlsTest extends BaseTest {
@@ -16,9 +15,8 @@ class ExcludeUrlsTest extends BaseTest {
         $webPage->setUrl('http://example.com');
         $webPage->setContent($this->getHtmlDocumentFixture('example08'));
         
-        $checker = new HtmlDocumentLinkChecker();
+        $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
-        $checker->setHttpClient($this->getHttpClient());
         $checker->setUrlsToExclude(array(
             'http://example.com/foo',
             'http://example.com/bar'

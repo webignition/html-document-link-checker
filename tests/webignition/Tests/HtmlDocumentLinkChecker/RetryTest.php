@@ -2,7 +2,6 @@
 
 namespace webignition\Tests\HtmlDocumentLinkChecker;
 
-use webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker;
 use webignition\WebResource\WebPage\WebPage;
 
 class RetryTest extends BaseTest {
@@ -18,11 +17,9 @@ class RetryTest extends BaseTest {
         $webPage->setUrl('http://example.com');
         $webPage->setContent($this->getHtmlDocumentFixture('example10'));
         
-        $checker = new HtmlDocumentLinkChecker();
+        $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
-        $checker->setHttpClient($this->getHttpClient());
-        $checker->setHttpMethodList(array('GET'));
-        $checker->setUserAgents(array('bar'));
+        $checker->setRetryOnBadResponse(true);
         
         $this->assertEquals(0, count($checker->getErrored()));
     }     
@@ -38,11 +35,9 @@ class RetryTest extends BaseTest {
         $webPage->setUrl('http://example.com');
         $webPage->setContent($this->getHtmlDocumentFixture('example10'));
         
-        $checker = new HtmlDocumentLinkChecker();
+        $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
-        $checker->setHttpClient($this->getHttpClient());
-        $checker->setHttpMethodList(array('GET'));
-        $checker->setUserAgents(array('bar'));
+        $checker->setRetryOnBadResponse(true);
         
         $this->assertEquals(1, count($checker->getErrored()));        
     }
@@ -57,10 +52,8 @@ class RetryTest extends BaseTest {
         $webPage->setUrl('http://example.com');
         $webPage->setContent($this->getHtmlDocumentFixture('example10'));
         
-        $checker = new HtmlDocumentLinkChecker();
+        $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
-        $checker->setHttpClient($this->getHttpClient());
-        $checker->setHttpMethodList(array('GET'));
         $checker->setRetryOnBadResponse(false);
         
         $erroredLinks = $checker->getErrored();        

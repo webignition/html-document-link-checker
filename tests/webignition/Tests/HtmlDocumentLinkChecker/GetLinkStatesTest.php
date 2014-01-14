@@ -2,17 +2,14 @@
 
 namespace webignition\Tests\HtmlDocumentLinkChecker;
 
-use webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker;
 use webignition\HtmlDocumentLinkChecker\LinkCheckResult;
 use webignition\HtmlDocumentLinkChecker\LinkState;
 use webignition\WebResource\WebPage\WebPage;
 
 class GetLinkStatesTest extends BaseTest {
     
-    public function testWithNoWebPage() {
-        $checker = new HtmlDocumentLinkChecker();
-        
-        $this->assertEquals(array(), $checker->getAll());     
+    public function testWithNoWebPage() {        
+        $this->assertEquals(array(), $this->getDefaultChecker()->getAll());     
     }
     
     public function testWithNoLinks() {
@@ -20,7 +17,7 @@ class GetLinkStatesTest extends BaseTest {
         $webPage->setUrl('http://example.com/');
         $webPage->setContent($this->getHtmlDocumentFixture('example03'));
         
-        $checker = new HtmlDocumentLinkChecker();
+        $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
         
         $this->assertEquals(array(), $checker->getAll()); 
@@ -30,23 +27,8 @@ class GetLinkStatesTest extends BaseTest {
     public function testWithVariedHttpStatusCodes() {
         $this->loadHttpClientFixtures(array(
             'HTTP/1.1 200 Ok',
-            'HTTP/1.1 404 Not Found',
-            'HTTP/1.1 404 Not Found',
-            'HTTP/1.1 404 Not Found',
-            'HTTP/1.1 404 Not Found',
-            'HTTP/1.1 404 Not Found',
             'HTTP/1.1 404 Not Found',            
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',            
-            'HTTP/1.1 410 Gone',
-            'HTTP/1.1 410 Gone',
-            'HTTP/1.1 410 Gone',
-            'HTTP/1.1 410 Gone',
-            'HTTP/1.1 410 Gone',
+            'HTTP/1.1 500 Internal Server Error',           
             'HTTP/1.1 410 Gone',            
             'HTTP/1.1 200 Ok',
             'HTTP/1.1 200 Ok'
@@ -56,9 +38,8 @@ class GetLinkStatesTest extends BaseTest {
         $webPage->setUrl('http://example.com/');
         $webPage->setContent($this->getHtmlDocumentFixture('example01'));
         
-        $checker = new HtmlDocumentLinkChecker();
+        $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
-        $checker->setHttpClient($this->getHttpClient());
         
         $this->assertEquals(array(
             new LinkCheckResult('http://www.youtube.com/example', '<a href="http://www.youtube.com/example"><img src="/images/youtube.png"></a>', new LinkState(LinkState::TYPE_HTTP, 200)),
@@ -94,9 +75,8 @@ class GetLinkStatesTest extends BaseTest {
         $webPage->setUrl('http://example.com/');
         $webPage->setContent($this->getHtmlDocumentFixture('example01'));
         
-        $checker = new HtmlDocumentLinkChecker();
+        $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
-        $checker->setHttpClient($this->getHttpClient());
         
         $this->assertEquals(array(
             new LinkCheckResult('http://www.youtube.com/example', '<a href="http://www.youtube.com/example"><img src="/images/youtube.png"></a>', new LinkState(LinkState::TYPE_CURL, 6)),
@@ -123,17 +103,7 @@ class GetLinkStatesTest extends BaseTest {
             $curl6Exception,
             'HTTP/1.1 200 Ok',
             $curl28Exception,
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',            
-            'HTTP/1.1 400 Bad Request',
-            'HTTP/1.1 400 Bad Request',
-            'HTTP/1.1 400 Bad Request',
-            'HTTP/1.1 400 Bad Request',
-            'HTTP/1.1 400 Bad Request',
+            'HTTP/1.1 500 Internal Server Error',     
             'HTTP/1.1 400 Bad Request',            
             'HTTP/1.1 200 Ok',
         ));      
@@ -142,9 +112,8 @@ class GetLinkStatesTest extends BaseTest {
         $webPage->setUrl('http://example.com/');
         $webPage->setContent($this->getHtmlDocumentFixture('example01'));
         
-        $checker = new HtmlDocumentLinkChecker();
+        $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
-        $checker->setHttpClient($this->getHttpClient());
         
         $this->assertEquals(array(
             new LinkCheckResult('http://www.youtube.com/example', '<a href="http://www.youtube.com/example"><img src="/images/youtube.png"></a>', new LinkState(LinkState::TYPE_CURL, 6)),
@@ -196,7 +165,7 @@ class GetLinkStatesTest extends BaseTest {
         $webPage->setUrl('http://example.com/');
         $webPage->setContent($this->getHtmlDocumentFixture('example04'));
         
-        $checker = new HtmlDocumentLinkChecker();
+        $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
         $checker->setHttpClient($this->getHttpClient());
         

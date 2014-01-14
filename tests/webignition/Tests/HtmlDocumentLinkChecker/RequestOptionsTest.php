@@ -2,7 +2,6 @@
 
 namespace webignition\Tests\HtmlDocumentLinkChecker;
 
-use webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker;
 use webignition\WebResource\WebPage\WebPage;
 use webignition\HtmlDocumentLinkChecker\LinkCheckResult;
 use webignition\HtmlDocumentLinkChecker\LinkState;
@@ -14,10 +13,9 @@ class RequestOptionsTest extends BaseTest {
         $webPage->setUrl('http://www.americanexpress.com/');
         $webPage->setContent($this->getHtmlDocumentFixture('example14'));
         
-        $checker = new HtmlDocumentLinkChecker();
+        $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
-        $checker->setHttpClient($this->getHttpClient());
-        $checker->setHttpMethodList(array('GET'));
+
         $requestOptions = $checker->getRequestOptions();
         $requestOptions['timeout'] = 0.001;
         $requestOptions['connect_timeout'] = 0.001;

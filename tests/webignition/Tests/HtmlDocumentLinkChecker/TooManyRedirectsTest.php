@@ -2,7 +2,6 @@
 
 namespace webignition\Tests\HtmlDocumentLinkChecker;
 
-use webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker;
 use webignition\HtmlDocumentLinkChecker\LinkCheckResult;
 use webignition\HtmlDocumentLinkChecker\LinkState;
 use webignition\WebResource\WebPage\WebPage;
@@ -23,9 +22,8 @@ class TooManyRedirectsTest extends BaseTest {
         $webPage->setUrl('http://example.com');
         $webPage->setContent($this->getHtmlDocumentFixture('example10'));
         
-        $checker = new HtmlDocumentLinkChecker();
+        $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
-        $checker->setHttpClient($this->getHttpClient());
         
         $this->assertEquals(array(
             new LinkCheckResult('http://example.com/', '<a href="http://example.com/">Example no subdomain</a>', new LinkState(LinkState::TYPE_HTTP, 301))            

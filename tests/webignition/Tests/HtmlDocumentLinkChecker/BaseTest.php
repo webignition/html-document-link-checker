@@ -2,6 +2,8 @@
 
 namespace webignition\Tests\HtmlDocumentLinkChecker;
 
+use webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker;
+
 abstract class BaseTest extends \PHPUnit_Framework_TestCase {
     
     /**
@@ -50,6 +52,21 @@ abstract class BaseTest extends \PHPUnit_Framework_TestCase {
         }
         
         $this->getHttpClient()->addSubscriber($plugin);
+    }
+    
+    
+    
+    /**
+     * 
+     * @return \webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker
+     */
+    protected function getDefaultChecker() {
+        $checker = new HtmlDocumentLinkChecker();
+        $checker->setHttpClient($this->getHttpClient());
+        $checker->setRetryOnBadResponse(false);
+        $checker->setHttpMethodList(array('GET'));
+        
+        return $checker;
     }
     
 }

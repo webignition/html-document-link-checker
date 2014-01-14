@@ -6,6 +6,7 @@ class HtmlDocumentLinkChecker {
     const URL_SCHEME_MAILTO = 'mailto';
     const URL_SCHEME_ABOUT = 'about';
     const URL_SCEME_JAVASCRIPT = 'javascript';
+    const HTTP_STATUS_CODE_OK = 200;
     const HTTP_STATUS_CODE_METHOD_NOT_ALLOWED = 405;
     const HTTP_STATUS_CODE_NOT_IMPLEMENTED = 501;
     
@@ -103,6 +104,13 @@ class HtmlDocumentLinkChecker {
      */
     private $retryOnBadResponse = true;
     
+    
+    /**
+     *
+     * @var boolean
+     */
+    private $toggleUrlEncoding = false;
+    
 
     /**
      *
@@ -112,6 +120,25 @@ class HtmlDocumentLinkChecker {
         'timeout'         => self::DEFAULT_REQUEST_TIMEOUT,
         'connect_timeout' => self::DEFAULT_REQUEST_CONNECT_TIMEOUT        
     );
+    
+    
+    public function enableToggleUrlEncoding() {
+        $this->toggleUrlEncoding = true;
+    }
+    
+    
+    public function disableToggleUrlEncoding() {
+        $this->toggleUrlEncoding = false;
+    }    
+    
+    
+    /**
+     * 
+     * @return boolean
+     */
+    public function getToggleUrlEncoding() {
+        return $this->toggleUrlEncoding;
+    }
     
     
     /**
@@ -251,6 +278,8 @@ class HtmlDocumentLinkChecker {
             }
 
             foreach ($linkFinder->getAll() as $link) {                             
+                $link['url'] = rawurldecode($link['url']);                
+                
                 if ($this->isUrlToBeIncluded($link['url'])) {
                     $this->linkCheckResults[] = new LinkCheckResult($link['url'], $link['element'], $this->getLinkState($link['url']));
                 }
@@ -338,7 +367,7 @@ class HtmlDocumentLinkChecker {
      * @param string $url
      * @return \webignition\HtmlDocumentLinkChecker\LinkState
      */
-    private function getLinkState($url) {
+    private function getLinkState($url) {        
         if ($this->hasLinkStateForUrl($url)) {
             return $this->urlToLinkStateMap[$url];
         }        
@@ -358,19 +387,58 @@ class HtmlDocumentLinkChecker {
      * @param string $url
      * @return \webignition\HtmlDocumentLinkChecker\LinkState
      */
-    private function deriveLinkState($url) {                
+    private function deriveLinkState($url) {
+        $requests = $this->buildRequestSet($url);
+        
         try {
-            foreach ($this->httpMethodList as $methodIndex => $method) {
-                $isLastMethod = $methodIndex == count($this->httpMethodList) - 1;            
-                $response = $this->getResponseForHttpMethod($url, $method);
-
-                if (!$response->isError() || $isLastMethod) {
+            foreach ($requests as $requestIndex => $request) {               
+                $response = $this->getHttpResponse($request);
+                
+                if ($response->getStatusCode() === self::HTTP_STATUS_CODE_OK) {
                     return new LinkState(LinkState::TYPE_HTTP, $response->getStatusCode());
                 }
-            }            
+            }           
         } catch (\Guzzle\Http\Exception\CurlException $curlException) {
             return new LinkState(LinkState::TYPE_CURL, $curlException->getErrorNo());
         }
+        
+        return new LinkState(LinkState::TYPE_HTTP, $response->getStatusCode());
+    }
+    
+    
+    /**
+     * 
+     * @param type $url
+     * @return \Guzzle\Http\Message\Request[]
+     */
+    private function buildRequestSet($url) {        
+        $useEncodingOptions = ($this->getToggleUrlEncoding())
+            ? array(true, false)
+            : array(true);
+        
+        $requests = array();
+        
+        $userAgentSelection = $this->getUserAgentSelectionForRequest();
+        
+        foreach ($userAgentSelection as $userAgent) {
+            foreach ($this->httpMethodList as $methodIndex => $method) {
+                foreach ($useEncodingOptions as $useEncoding) {
+                    $requestUrl = \Guzzle\Http\Url::factory($url);
+                    $requestUrl->getQuery()->useUrlEncoding($useEncoding);
+
+                    $request = $this->getHttpClient()->createRequest($method, $url, array(
+                        'Referer' => $this->webPage->getUrl()
+                    ), null, $this->getRequestOptions());                    
+                    
+                    $request->setUrl($requestUrl);    
+                    $request->setHeader('user-agent', $userAgent);
+                    
+                    $requests[] = $request;
+                }
+            }
+        }
+        
+        return $requests;       
     }
     
     
@@ -380,7 +448,7 @@ class HtmlDocumentLinkChecker {
      * @param string $url
      * @return boolean
      */
-    private function hasLinkStateForUrl($url) {
+    private function hasLinkStateForUrl($url) {        
         return isset($this->urlToLinkStateMap[$url]);
     }
     
@@ -391,10 +459,18 @@ class HtmlDocumentLinkChecker {
      * @param string $method
      * @return \Guzzle\Http\Message\Response
      */
-    private function getResponseForHttpMethod($url, $method) {        
+    private function getResponseForHttpMethod($url, $method) {                
+        $requestUrl = \Guzzle\Http\Url::factory($url);
+        $requestUrl->getQuery()->useUrlEncoding(false);
+        
         $request = $this->getHttpClient()->createRequest($method, $url, array(
             'Referer' => $this->webPage->getUrl()
         ), null, $this->getRequestOptions());
+        
+        $request->setUrl($requestUrl);
+        
+        echo $request->send();
+        exit();
         
         $userAgentSelection = $this->getUserAgentSelectionForRequest($request);        
         
@@ -422,7 +498,7 @@ class HtmlDocumentLinkChecker {
      * @param \Guzzle\Http\Message\Request $request
      * @return \Guzzle\Http\Message\Response
      */
-    private function getHttpResponse(\Guzzle\Http\Message\Request $request) {                
+    private function getHttpResponse(\Guzzle\Http\Message\Request $request) {                                
         try {                
             return $request->send();
         } catch (\Guzzle\Http\Exception\TooManyRedirectsException $tooManyRedirectsException) {
@@ -470,15 +546,14 @@ class HtmlDocumentLinkChecker {
     
     /**
      * 
-     * @param \Guzzle\Http\Message\Request $request
      * @return array
      */
-    private function getUserAgentSelectionForRequest(\Guzzle\Http\Message\Request $request) {
+    private function getUserAgentSelectionForRequest() {
         if (count($this->userAgents)) {
             return $this->userAgents;
         }
         
-        return $request->getHeader('User-Agent')->toArray();     
+        return $this->getHttpClient()->get()->getHeader('User-Agent')->toArray();     
     }
     
     

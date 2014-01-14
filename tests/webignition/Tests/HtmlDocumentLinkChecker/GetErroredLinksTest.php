@@ -2,16 +2,15 @@
 
 namespace webignition\Tests\HtmlDocumentLinkChecker;
 
-use webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker;
 use webignition\HtmlDocumentLinkChecker\LinkCheckResult;
 use webignition\HtmlDocumentLinkChecker\LinkState;
 use webignition\WebResource\WebPage\WebPage;
 
-class GetErroredLinksTest extends BaseTest {
+class GetErroredLinksTest extends BaseTest {   
+
     
-    public function testWithNoWebPage() {
-        $checker = new HtmlDocumentLinkChecker();        
-        $this->assertEquals(array(), $checker->getErrored());         
+    public function testWithNoWebPage() {     
+        $this->assertEquals(array(), $this->getDefaultChecker()->getErrored());         
     }
     
     public function testWithNoLinks() {
@@ -19,7 +18,7 @@ class GetErroredLinksTest extends BaseTest {
         $webPage->setUrl('http://example.com/');
         $webPage->setContent($this->getHtmlDocumentFixture('example03'));
         
-        $checker = new HtmlDocumentLinkChecker();
+        $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
         
         $this->assertEquals(array(), $checker->getErrored());  
@@ -27,36 +26,20 @@ class GetErroredLinksTest extends BaseTest {
     
     public function testWithVariedHttpStatusCodes() {
         $this->loadHttpClientFixtures(array(
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 404 Not Found',
-            'HTTP/1.1 404 Not Found',
-            'HTTP/1.1 404 Not Found',
-            'HTTP/1.1 404 Not Found',
-            'HTTP/1.1 404 Not Found',
-            'HTTP/1.1 404 Not Found',            
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',            
-            'HTTP/1.1 410 Gone',
-            'HTTP/1.1 410 Gone',
-            'HTTP/1.1 410 Gone',
-            'HTTP/1.1 410 Gone',
-            'HTTP/1.1 410 Gone',
-            'HTTP/1.1 410 Gone',            
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok'
+            'HTTP/1.1 200',            
+            'HTTP/1.1 404',
+            'HTTP/1.1 500',
+            'HTTP/1.1 410',            
+            'HTTP/1.1 200',
+            'HTTP/1.1 200',
         ));
         
         $webPage = new WebPage();
         $webPage->setUrl('http://example.com/');
         $webPage->setContent($this->getHtmlDocumentFixture('example01'));
         
-        $checker = new HtmlDocumentLinkChecker();
-        $checker->setWebPage($webPage);
-        $checker->setHttpClient($this->getHttpClient());
+        $checker = $this->getDefaultChecker();
+        $checker->setWebPage($webPage);      
         
         $this->assertEquals(array(
             new LinkCheckResult('http://example.com/images/youtube.png', '<img src="/images/youtube.png">', new LinkState(LinkState::TYPE_HTTP, 404)),
@@ -89,9 +72,8 @@ class GetErroredLinksTest extends BaseTest {
         $webPage->setUrl('http://example.com/');
         $webPage->setContent($this->getHtmlDocumentFixture('example01'));
         
-        $checker = new HtmlDocumentLinkChecker();
-        $checker->setWebPage($webPage);
-        $checker->setHttpClient($this->getHttpClient());
+        $checker = $this->getDefaultChecker();
+        $checker->setWebPage($webPage);       
         
         $this->assertEquals(array(
             new LinkCheckResult('http://www.youtube.com/example', '<a href="http://www.youtube.com/example"><img src="/images/youtube.png"></a>', new LinkState(LinkState::TYPE_CURL, 6)),
@@ -114,12 +96,7 @@ class GetErroredLinksTest extends BaseTest {
         $this->loadHttpClientFixtures(array(
             $curl6Exception,
             'HTTP/1.1 200 Ok',
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',
-            'HTTP/1.1 500 Internal Server Error',            
+            'HTTP/1.1 500 Internal Server Error',          
             'HTTP/1.1 200 Ok',
             'HTTP/1.1 200 Ok',
             'HTTP/1.1 200 Ok'
@@ -129,82 +106,12 @@ class GetErroredLinksTest extends BaseTest {
         $webPage->setUrl('http://example.com/');
         $webPage->setContent($this->getHtmlDocumentFixture('example01'));
         
-        $checker = new HtmlDocumentLinkChecker();
+        $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
-        $checker->setHttpClient($this->getHttpClient());
       
         $this->assertEquals(array(
             new LinkCheckResult('http://www.youtube.com/example', '<a href="http://www.youtube.com/example"><img src="/images/youtube.png"></a>', new LinkState(LinkState::TYPE_CURL, 6)),
             new LinkCheckResult('http://blog.example.com/', '<a href="http://blog.example.com"><img src="/images/blog.png"></a>', new LinkState(LinkState::TYPE_HTTP, 500))
         ), $checker->getErrored());
-    }
-    
-    
-    public function testExcludeMailtoLinks() {
-        $this->loadHttpClientFixtures(array(
-            'HTTP/1.1 200 Ok'
-        ));        
-        
-        $webPage = new WebPage();
-        $webPage->setUrl('http://example.com/');
-        $webPage->setContent($this->getHtmlDocumentFixture('example05'));
-        
-        $checker = new HtmlDocumentLinkChecker();
-        $checker->setWebPage($webPage);
-        $checker->setHttpClient($this->getHttpClient());
-        
-        $this->assertEquals(array(), $checker->getErrored());          
-    }
-    
-    public function testRetryOn405() {
-        $this->loadHttpClientFixtures(array(
-            'HTTP/1.1 405',
-            'HTTP/1.1 200 Ok'
-        ));
-        
-        $webPage = new WebPage();
-        $webPage->setUrl('http://example.com');
-        $webPage->setContent($this->getHtmlDocumentFixture('example06'));
-        
-        $checker = new HtmlDocumentLinkChecker();
-        $checker->setWebPage($webPage);
-        $checker->setHttpClient($this->getHttpClient());
-        
-        $this->assertEquals(array(), $checker->getErrored());
-    }    
-    
-
-    public function testRetryOn501() {
-        $this->loadHttpClientFixtures(array(
-            'HTTP/1.1 501',
-            'HTTP/1.1 200 Ok'
-        ));
-        
-        $webPage = new WebPage();
-        $webPage->setUrl('http://example.com');
-        $webPage->setContent($this->getHtmlDocumentFixture('example06'));
-        
-        $checker = new HtmlDocumentLinkChecker();
-        $checker->setWebPage($webPage);
-        $checker->setHttpClient($this->getHttpClient());
-        
-        $this->assertEquals(array(), $checker->getErrored());
-    }
-    
-    public function testRetryOn404() {
-        $this->loadHttpClientFixtures(array(
-            'HTTP/1.1 404',
-            'HTTP/1.1 200 Ok'
-        ));
-        
-        $webPage = new WebPage();
-        $webPage->setUrl('http://example.com');
-        $webPage->setContent($this->getHtmlDocumentFixture('example06'));
-        
-        $checker = new HtmlDocumentLinkChecker();
-        $checker->setWebPage($webPage);
-        $checker->setHttpClient($this->getHttpClient());
-        
-        $this->assertEquals(array(), $checker->getErrored());
     }
 }

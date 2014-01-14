@@ -2,7 +2,6 @@
 
 namespace webignition\Tests\HtmlDocumentLinkChecker;
 
-use webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker;
 use webignition\WebResource\WebPage\WebPage;
 
 class CheckUrlsOnlyOnceTest extends BaseTest {
@@ -18,9 +17,8 @@ class CheckUrlsOnlyOnceTest extends BaseTest {
         $webPage->setUrl('http://example.com');
         $webPage->setContent($this->getHtmlDocumentFixture('example07'));
         
-        $checker = new HtmlDocumentLinkChecker();
+        $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
-        $checker->setHttpClient($this->getHttpClient());
         
         $this->assertEquals(6, count($checker->getAll()));
     }  
