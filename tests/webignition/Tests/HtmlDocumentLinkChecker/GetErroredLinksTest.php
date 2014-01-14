@@ -1,18 +1,17 @@
 <?php
 
-namespace webignition\HtmlDocumentLinkChecker\Tests;
+namespace webignition\Tests\HtmlDocumentLinkChecker;
 
 use webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker;
 use webignition\HtmlDocumentLinkChecker\LinkCheckResult;
 use webignition\HtmlDocumentLinkChecker\LinkState;
 use webignition\WebResource\WebPage\WebPage;
 
-class GetLinkStatesTest extends BaseTest {
+class GetErroredLinksTest extends BaseTest {
     
     public function testWithNoWebPage() {
-        $checker = new HtmlDocumentLinkChecker();
-        
-        $this->assertEquals(array(), $checker->getAll());     
+        $checker = new HtmlDocumentLinkChecker();        
+        $this->assertEquals(array(), $checker->getErrored());         
     }
     
     public function testWithNoLinks() {
@@ -23,9 +22,8 @@ class GetLinkStatesTest extends BaseTest {
         $checker = new HtmlDocumentLinkChecker();
         $checker->setWebPage($webPage);
         
-        $this->assertEquals(array(), $checker->getAll()); 
-    }
-    
+        $this->assertEquals(array(), $checker->getErrored());  
+    }    
     
     public function testWithVariedHttpStatusCodes() {
         $this->loadHttpClientFixtures(array(
@@ -61,17 +59,14 @@ class GetLinkStatesTest extends BaseTest {
         $checker->setHttpClient($this->getHttpClient());
         
         $this->assertEquals(array(
-            new LinkCheckResult('http://www.youtube.com/example', '<a href="http://www.youtube.com/example"><img src="/images/youtube.png"></a>', new LinkState(LinkState::TYPE_HTTP, 200)),
             new LinkCheckResult('http://example.com/images/youtube.png', '<img src="/images/youtube.png">', new LinkState(LinkState::TYPE_HTTP, 404)),
-            new LinkCheckResult('http://blog.example.com/', '<a href="http://blog.example.com"><img src="/images/blog.png"></a>', new LinkState(LinkState::TYPE_HTTP, 500)),            
+            new LinkCheckResult('http://blog.example.com/', '<a href="http://blog.example.com"><img src="/images/blog.png"></a>', new LinkState(LinkState::TYPE_HTTP, 500)),
             new LinkCheckResult('http://example.com/images/blog.png', '<img src="/images/blog.png">', new LinkState(LinkState::TYPE_HTTP, 410)),
-            new LinkCheckResult('http://twitter.com/example', '<a href="http://twitter.com/example"><img src="/images/twitter.png"></a>', new LinkState(LinkState::TYPE_HTTP, 200)),
-            new LinkCheckResult('http://example.com/images/twitter.png', '<img src="/images/twitter.png">', new LinkState(LinkState::TYPE_HTTP, 200)),
-        ), $checker->getAll());
-    }  
+        ), $checker->getErrored());
+    }
     
     
-    public function testWithVariedCurlCodes() {
+    public function testWithVariedCurlCodesCodes() {
         $curl6Exception = new \Guzzle\Http\Exception\CurlException();
         $curl6Exception->setError('Couldn\'t resolve host. The given remote host was not resolved.', 6);        
         
@@ -84,10 +79,10 @@ class GetLinkStatesTest extends BaseTest {
         $this->loadHttpClientFixtures(array(
             $curl6Exception,
             $curl28Exception,
-            $curl28Exception,
             $curl55Exception,
-            $curl6Exception,
-            $curl55Exception
+            'HTTP/1.1 200 Ok',
+            'HTTP/1.1 200 Ok',
+            'HTTP/1.1 200 Ok'
         ));
         
         $webPage = new WebPage();
@@ -101,15 +96,12 @@ class GetLinkStatesTest extends BaseTest {
         $this->assertEquals(array(
             new LinkCheckResult('http://www.youtube.com/example', '<a href="http://www.youtube.com/example"><img src="/images/youtube.png"></a>', new LinkState(LinkState::TYPE_CURL, 6)),
             new LinkCheckResult('http://example.com/images/youtube.png', '<img src="/images/youtube.png">', new LinkState(LinkState::TYPE_CURL, 28)),
-            new LinkCheckResult('http://blog.example.com/', '<a href="http://blog.example.com"><img src="/images/blog.png"></a>', new LinkState(LinkState::TYPE_CURL, 28)),            
-            new LinkCheckResult('http://example.com/images/blog.png', '<img src="/images/blog.png">', new LinkState(LinkState::TYPE_CURL, 55)),
-            new LinkCheckResult('http://twitter.com/example', '<a href="http://twitter.com/example"><img src="/images/twitter.png"></a>', new LinkState(LinkState::TYPE_CURL, 6)),
-            new LinkCheckResult('http://example.com/images/twitter.png', '<img src="/images/twitter.png">', new LinkState(LinkState::TYPE_CURL, 55)),
-        ), $checker->getAll());    
-    }
+            new LinkCheckResult('http://blog.example.com/', '<a href="http://blog.example.com"><img src="/images/blog.png"></a>', new LinkState(LinkState::TYPE_CURL, 55)),
+        ), $checker->getErrored());    
+    }   
     
     
-    public function testWithMixedHttpStatusCodesAndCurlCodes() {
+    public function testWithMixedHttpStatusCodesAndCurlCodes() {        
         $curl6Exception = new \Guzzle\Http\Exception\CurlException();
         $curl6Exception->setError('Couldn\'t resolve host. The given remote host was not resolved.', 6);        
         
@@ -122,20 +114,15 @@ class GetLinkStatesTest extends BaseTest {
         $this->loadHttpClientFixtures(array(
             $curl6Exception,
             'HTTP/1.1 200 Ok',
-            $curl28Exception,
             'HTTP/1.1 500 Internal Server Error',
             'HTTP/1.1 500 Internal Server Error',
             'HTTP/1.1 500 Internal Server Error',
             'HTTP/1.1 500 Internal Server Error',
             'HTTP/1.1 500 Internal Server Error',
             'HTTP/1.1 500 Internal Server Error',            
-            'HTTP/1.1 400 Bad Request',
-            'HTTP/1.1 400 Bad Request',
-            'HTTP/1.1 400 Bad Request',
-            'HTTP/1.1 400 Bad Request',
-            'HTTP/1.1 400 Bad Request',
-            'HTTP/1.1 400 Bad Request',            
             'HTTP/1.1 200 Ok',
+            'HTTP/1.1 200 Ok',
+            'HTTP/1.1 200 Ok'
         ));      
         
         $webPage = new WebPage();
@@ -145,63 +132,79 @@ class GetLinkStatesTest extends BaseTest {
         $checker = new HtmlDocumentLinkChecker();
         $checker->setWebPage($webPage);
         $checker->setHttpClient($this->getHttpClient());
-        
+      
         $this->assertEquals(array(
             new LinkCheckResult('http://www.youtube.com/example', '<a href="http://www.youtube.com/example"><img src="/images/youtube.png"></a>', new LinkState(LinkState::TYPE_CURL, 6)),
-            new LinkCheckResult('http://example.com/images/youtube.png', '<img src="/images/youtube.png">', new LinkState(LinkState::TYPE_HTTP, 200)),
-            new LinkCheckResult('http://blog.example.com/', '<a href="http://blog.example.com"><img src="/images/blog.png"></a>', new LinkState(LinkState::TYPE_CURL, 28)),            
-            new LinkCheckResult('http://example.com/images/blog.png', '<img src="/images/blog.png">', new LinkState(LinkState::TYPE_HTTP, 500)),
-            new LinkCheckResult('http://twitter.com/example', '<a href="http://twitter.com/example"><img src="/images/twitter.png"></a>', new LinkState(LinkState::TYPE_HTTP, 400)),
-            new LinkCheckResult('http://example.com/images/twitter.png', '<img src="/images/twitter.png">', new LinkState(LinkState::TYPE_HTTP, 200)),          
-        ), $checker->getAll());
+            new LinkCheckResult('http://blog.example.com/', '<a href="http://blog.example.com"><img src="/images/blog.png"></a>', new LinkState(LinkState::TYPE_HTTP, 500))
+        ), $checker->getErrored());
     }
     
     
-    public function testWithVariedLinkTypes() {        
+    public function testExcludeMailtoLinks() {
         $this->loadHttpClientFixtures(array(
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-            'HTTP/1.1 200 Ok',
-        ));      
+            'HTTP/1.1 200 Ok'
+        ));        
         
         $webPage = new WebPage();
         $webPage->setUrl('http://example.com/');
-        $webPage->setContent($this->getHtmlDocumentFixture('example04'));
+        $webPage->setContent($this->getHtmlDocumentFixture('example05'));
         
         $checker = new HtmlDocumentLinkChecker();
         $checker->setWebPage($webPage);
         $checker->setHttpClient($this->getHttpClient());
         
-        $this->assertEquals(30, count($checker->getAll()));
+        $this->assertEquals(array(), $checker->getErrored());          
+    }
+    
+    public function testRetryOn405() {
+        $this->loadHttpClientFixtures(array(
+            'HTTP/1.1 405',
+            'HTTP/1.1 200 Ok'
+        ));
+        
+        $webPage = new WebPage();
+        $webPage->setUrl('http://example.com');
+        $webPage->setContent($this->getHtmlDocumentFixture('example06'));
+        
+        $checker = new HtmlDocumentLinkChecker();
+        $checker->setWebPage($webPage);
+        $checker->setHttpClient($this->getHttpClient());
+        
+        $this->assertEquals(array(), $checker->getErrored());
     }    
     
+
+    public function testRetryOn501() {
+        $this->loadHttpClientFixtures(array(
+            'HTTP/1.1 501',
+            'HTTP/1.1 200 Ok'
+        ));
+        
+        $webPage = new WebPage();
+        $webPage->setUrl('http://example.com');
+        $webPage->setContent($this->getHtmlDocumentFixture('example06'));
+        
+        $checker = new HtmlDocumentLinkChecker();
+        $checker->setWebPage($webPage);
+        $checker->setHttpClient($this->getHttpClient());
+        
+        $this->assertEquals(array(), $checker->getErrored());
+    }
     
+    public function testRetryOn404() {
+        $this->loadHttpClientFixtures(array(
+            'HTTP/1.1 404',
+            'HTTP/1.1 200 Ok'
+        ));
+        
+        $webPage = new WebPage();
+        $webPage->setUrl('http://example.com');
+        $webPage->setContent($this->getHtmlDocumentFixture('example06'));
+        
+        $checker = new HtmlDocumentLinkChecker();
+        $checker->setWebPage($webPage);
+        $checker->setHttpClient($this->getHttpClient());
+        
+        $this->assertEquals(array(), $checker->getErrored());
+    }
 }

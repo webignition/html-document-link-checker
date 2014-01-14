@@ -1,6 +1,6 @@
 <?php
 
-namespace webignition\HtmlDocumentLinkChecker\Tests;
+namespace webignition\Tests\HtmlDocumentLinkChecker;
 
 abstract class BaseTest extends \PHPUnit_Framework_TestCase {
     
@@ -16,7 +16,7 @@ abstract class BaseTest extends \PHPUnit_Framework_TestCase {
      * @return string
      */
     protected function getHtmlDocumentFixture($name) {
-        return file_get_contents(__DIR__ . '/../../fixtures/html-documents/' . $name . '.html');
+        return file_get_contents(__DIR__ . '/../../../fixtures/html-documents/' . $name . '.html');
     }
     
     

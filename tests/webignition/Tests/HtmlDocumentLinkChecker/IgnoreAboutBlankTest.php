@@ -1,16 +1,16 @@
 <?php
 
-namespace webignition\HtmlDocumentLinkChecker\Tests;
+namespace webignition\Tests\HtmlDocumentLinkChecker;
 
 use webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker;
 use webignition\WebResource\WebPage\WebPage;
 
-class IgnoreJavaScriptTest extends BaseTest {
+class IgnoreAboutBlankTest extends BaseTest {
     
-    public function testIgnoreJavascriptColonAnything() {        
+    public function testIgnoreAboutBlank() {        
         $webPage = new WebPage();
         $webPage->setUrl('http://example.com');
-        $webPage->setContent($this->getHtmlDocumentFixture('example11'));
+        $webPage->setContent($this->getHtmlDocumentFixture('example09'));
         
         $checker = new HtmlDocumentLinkChecker();
         $checker->setWebPage($webPage);
