@@ -1,6 +1,6 @@
 <?php
 
-namespace webignition\Tests\HtmlDocumentLinkChecker;
+namespace webignition\Tests\HtmlDocument\LinkChecker;
 
 use webignition\WebResource\WebPage\WebPage;
 

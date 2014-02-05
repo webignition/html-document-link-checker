@@ -1,10 +1,10 @@
 <?php
 
-namespace webignition\Tests\HtmlDocumentLinkChecker;
+namespace webignition\Tests\HtmlDocument\LinkChecker;
 
 use webignition\WebResource\WebPage\WebPage;
-use webignition\HtmlDocumentLinkChecker\LinkCheckResult;
-use webignition\HtmlDocumentLinkChecker\LinkState;
+use webignition\HtmlDocument\LinkChecker\LinkResult;
+use webignition\HtmlDocument\LinkChecker\LinkState;
 
 class RequestOptionsTest extends BaseTest {
     
@@ -22,7 +22,7 @@ class RequestOptionsTest extends BaseTest {
         $checker->setRequestOptions($requestOptions);
         
         $this->assertEquals(array(
-            new LinkCheckResult(
+            new LinkResult(
                     'https://online.americanexpress.com/myca/logon/us/action/LogLogoffHandler?Face=en_US&inav=Logout&request_type=LogLogoffHandler',
                     '<a id="Logout" title="Log out from the account" href="https://online.americanexpress.com/myca/logon/us/action/LogLogoffHandler?request_type=LogLogoffHandler&amp;Face=en_US&amp;inav=Logout" class="iNavLinkLogout">Log Out</a>',
                     new LinkState(LinkState::TYPE_CURL, 28)),

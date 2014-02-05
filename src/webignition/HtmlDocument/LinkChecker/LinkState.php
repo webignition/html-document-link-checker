@@ -1,5 +1,5 @@
 <?php
-namespace webignition\HtmlDocumentLinkChecker;
+namespace webignition\HtmlDocument\LinkChecker;
 
 class LinkState {
     
@@ -70,7 +70,7 @@ class LinkState {
     
 //    /**
 //     * 
-//     * @param \webignition\HtmlDocumentLinkChecker\LinkState $linkState
+//     * @param \webignition\HtmlDocument\LinkChecker\LinkState $linkState
 //     * @return boolean
 //     */
 //    public function equals(LinkState $linkState) {

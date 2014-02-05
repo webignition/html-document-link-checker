@@ -1,7 +1,7 @@
 <?php
-namespace webignition\HtmlDocumentLinkChecker;
+namespace webignition\HtmlDocument\LinkChecker;
 
-class HtmlDocumentLinkChecker {           
+class LinkChecker {           
     
     const URL_SCHEME_MAILTO = 'mailto';
     const URL_SCHEME_ABOUT = 'about';
@@ -281,7 +281,7 @@ class HtmlDocumentLinkChecker {
                 $link['url'] = rawurldecode($link['url']);                
                 
                 if ($this->isUrlToBeIncluded($link['url'])) {
-                    $this->linkCheckResults[] = new LinkCheckResult($link['url'], $link['element'], $this->getLinkState($link['url']));
+                    $this->linkCheckResults[] = new LinkResult($link['url'], $link['element'], $this->getLinkState($link['url']));
                 }
             }
         }
@@ -309,7 +309,7 @@ class HtmlDocumentLinkChecker {
     
     /**
      * 
-     * @param \webignition\HtmlDocumentLinkChecker\LinkState $linkState
+     * @param \webignition\HtmlDocument\LinkChecker\LinkState $linkState
      * @return boolean
      */
     private function isErrored(LinkState $linkState) {        
@@ -365,7 +365,7 @@ class HtmlDocumentLinkChecker {
     /**
      * 
      * @param string $url
-     * @return \webignition\HtmlDocumentLinkChecker\LinkState
+     * @return \webignition\HtmlDocument\LinkChecker\LinkState
      */
     private function getLinkState($url) {        
         if ($this->hasLinkStateForUrl($url)) {
@@ -385,7 +385,7 @@ class HtmlDocumentLinkChecker {
     /**
      * 
      * @param string $url
-     * @return \webignition\HtmlDocumentLinkChecker\LinkState
+     * @return \webignition\HtmlDocument\LinkChecker\LinkState
      */
     private function deriveLinkState($url) {
         $requests = $this->buildRequestSet($url);

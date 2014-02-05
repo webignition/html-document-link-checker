@@ -1,9 +1,9 @@
 <?php
 
-namespace webignition\Tests\HtmlDocumentLinkChecker;
+namespace webignition\Tests\HtmlDocument\LinkChecker;
 
-use webignition\HtmlDocumentLinkChecker\LinkCheckResult;
-use webignition\HtmlDocumentLinkChecker\LinkState;
+use webignition\HtmlDocument\LinkChecker\LinkResult;
+use webignition\HtmlDocument\LinkChecker\LinkState;
 use webignition\WebResource\WebPage\WebPage;
 
 class GetErroredLinksTest extends BaseTest {   
@@ -42,9 +42,9 @@ class GetErroredLinksTest extends BaseTest {
         $checker->setWebPage($webPage);      
         
         $this->assertEquals(array(
-            new LinkCheckResult('http://example.com/images/youtube.png', '<img src="/images/youtube.png">', new LinkState(LinkState::TYPE_HTTP, 404)),
-            new LinkCheckResult('http://blog.example.com/', '<a href="http://blog.example.com"><img src="/images/blog.png"></a>', new LinkState(LinkState::TYPE_HTTP, 500)),
-            new LinkCheckResult('http://example.com/images/blog.png', '<img src="/images/blog.png">', new LinkState(LinkState::TYPE_HTTP, 410)),
+            new LinkResult('http://example.com/images/youtube.png', '<img src="/images/youtube.png">', new LinkState(LinkState::TYPE_HTTP, 404)),
+            new LinkResult('http://blog.example.com/', '<a href="http://blog.example.com"><img src="/images/blog.png"></a>', new LinkState(LinkState::TYPE_HTTP, 500)),
+            new LinkResult('http://example.com/images/blog.png', '<img src="/images/blog.png">', new LinkState(LinkState::TYPE_HTTP, 410)),
         ), $checker->getErrored());
     }
     
@@ -76,9 +76,9 @@ class GetErroredLinksTest extends BaseTest {
         $checker->setWebPage($webPage);       
         
         $this->assertEquals(array(
-            new LinkCheckResult('http://www.youtube.com/example', '<a href="http://www.youtube.com/example"><img src="/images/youtube.png"></a>', new LinkState(LinkState::TYPE_CURL, 6)),
-            new LinkCheckResult('http://example.com/images/youtube.png', '<img src="/images/youtube.png">', new LinkState(LinkState::TYPE_CURL, 28)),
-            new LinkCheckResult('http://blog.example.com/', '<a href="http://blog.example.com"><img src="/images/blog.png"></a>', new LinkState(LinkState::TYPE_CURL, 55)),
+            new LinkResult('http://www.youtube.com/example', '<a href="http://www.youtube.com/example"><img src="/images/youtube.png"></a>', new LinkState(LinkState::TYPE_CURL, 6)),
+            new LinkResult('http://example.com/images/youtube.png', '<img src="/images/youtube.png">', new LinkState(LinkState::TYPE_CURL, 28)),
+            new LinkResult('http://blog.example.com/', '<a href="http://blog.example.com"><img src="/images/blog.png"></a>', new LinkState(LinkState::TYPE_CURL, 55)),
         ), $checker->getErrored());    
     }   
     
@@ -110,8 +110,8 @@ class GetErroredLinksTest extends BaseTest {
         $checker->setWebPage($webPage);
       
         $this->assertEquals(array(
-            new LinkCheckResult('http://www.youtube.com/example', '<a href="http://www.youtube.com/example"><img src="/images/youtube.png"></a>', new LinkState(LinkState::TYPE_CURL, 6)),
-            new LinkCheckResult('http://blog.example.com/', '<a href="http://blog.example.com"><img src="/images/blog.png"></a>', new LinkState(LinkState::TYPE_HTTP, 500))
+            new LinkResult('http://www.youtube.com/example', '<a href="http://www.youtube.com/example"><img src="/images/youtube.png"></a>', new LinkState(LinkState::TYPE_CURL, 6)),
+            new LinkResult('http://blog.example.com/', '<a href="http://blog.example.com"><img src="/images/blog.png"></a>', new LinkState(LinkState::TYPE_HTTP, 500))
         ), $checker->getErrored());
     }
 }

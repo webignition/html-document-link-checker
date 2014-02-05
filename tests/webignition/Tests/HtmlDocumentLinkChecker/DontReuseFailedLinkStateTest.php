@@ -1,9 +1,9 @@
 <?php
 
-namespace webignition\Tests\HtmlDocumentLinkChecker;
+namespace webignition\Tests\HtmlDocument\LinkChecker;
 
-use webignition\HtmlDocumentLinkChecker\LinkCheckResult;
-use webignition\HtmlDocumentLinkChecker\LinkState;
+use webignition\HtmlDocument\LinkChecker\LinkResult;
+use webignition\HtmlDocument\LinkChecker\LinkState;
 use webignition\WebResource\WebPage\WebPage;
 
 class DontReuseFailedLinkStateTest extends BaseTest {
@@ -22,8 +22,8 @@ class DontReuseFailedLinkStateTest extends BaseTest {
         $checker->setWebPage($webPage);
         
         $this->assertEquals(array(
-            new LinkCheckResult('http://example.com/', '<a href="http://example.com/">Example no subdomain 1</a>', new LinkState(LinkState::TYPE_HTTP, 500)),
-            new LinkCheckResult('http://example.com/', '<a href="http://example.com/">Example no subdomain 2</a>', new LinkState(LinkState::TYPE_HTTP, 200))                        
+            new LinkResult('http://example.com/', '<a href="http://example.com/">Example no subdomain 1</a>', new LinkState(LinkState::TYPE_HTTP, 500)),
+            new LinkResult('http://example.com/', '<a href="http://example.com/">Example no subdomain 2</a>', new LinkState(LinkState::TYPE_HTTP, 200))                        
         ), $checker->getAll());
     }  
     

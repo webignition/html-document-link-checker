@@ -1,8 +1,8 @@
 <?php
 
-namespace webignition\Tests\HtmlDocumentLinkChecker;
+namespace webignition\Tests\HtmlDocument\LinkChecker;
 
-use webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker;
+use webignition\HtmlDocument\LinkChecker\LinkChecker;
 
 abstract class BaseTest extends \PHPUnit_Framework_TestCase {
     
@@ -58,10 +58,10 @@ abstract class BaseTest extends \PHPUnit_Framework_TestCase {
     
     /**
      * 
-     * @return \webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker
+     * @return \webignition\HtmlDocument\LinkChecker\LinkChecker
      */
     protected function getDefaultChecker() {
-        $checker = new HtmlDocumentLinkChecker();
+        $checker = new LinkChecker();
         $checker->setHttpClient($this->getHttpClient());
         $checker->setRetryOnBadResponse(false);
         $checker->setHttpMethodList(array('GET'));

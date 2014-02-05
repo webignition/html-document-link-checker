@@ -1,9 +1,9 @@
 <?php
 
-namespace webignition\Tests\HtmlDocumentLinkChecker;
+namespace webignition\Tests\HtmlDocument\LinkChecker;
 
-use webignition\HtmlDocumentLinkChecker\LinkCheckResult;
-use webignition\HtmlDocumentLinkChecker\LinkState;
+use webignition\HtmlDocument\LinkChecker\LinkResult;
+use webignition\HtmlDocument\LinkChecker\LinkState;
 use webignition\WebResource\WebPage\WebPage;
 
 class CountRedirectAsErrorTest extends BaseTest {
@@ -26,7 +26,7 @@ class CountRedirectAsErrorTest extends BaseTest {
         $checker->setWebPage($webPage);
         
         $this->assertEquals(array(
-            new LinkCheckResult('http://example.com/', '<a href="http://example.com/">Example no subdomain</a>', new LinkState(LinkState::TYPE_HTTP, 301))            
+            new LinkResult('http://example.com/', '<a href="http://example.com/">Example no subdomain</a>', new LinkState(LinkState::TYPE_HTTP, 301))            
         ), $checker->getErrored());
     }  
     

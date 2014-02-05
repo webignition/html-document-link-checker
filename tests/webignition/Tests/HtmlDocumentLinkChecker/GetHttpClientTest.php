@@ -1,15 +1,15 @@
 <?php
 
-namespace webignition\Tests\HtmlDocumentLinkChecker;
+namespace webignition\Tests\HtmlDocument\LinkChecker;
 
-use webignition\HtmlDocumentLinkChecker\HtmlDocumentLinkChecker;
+use webignition\HtmlDocument\LinkChecker\LinkChecker;
 
 class GetHttpClientTest extends BaseTest {
     
     const TEST_USER_AGENT = 'Test User Agent';
     
     public function testWithoutSetting() {      
-        $linkChecker = new HtmlDocumentLinkChecker();
+        $linkChecker = new LinkChecker();
         $userAgentHeaderValues = $linkChecker->getHttpClient()->get()->getHeader('user-agent')->toArray();      
         $this->assertNotEquals(self::TEST_USER_AGENT, $userAgentHeaderValues[0]);
     }
@@ -18,7 +18,7 @@ class GetHttpClientTest extends BaseTest {
         $httpClient = new \Guzzle\Http\Client();
         $httpClient->setUserAgent(self::TEST_USER_AGENT);
         
-        $linkChecker = new HtmlDocumentLinkChecker();
+        $linkChecker = new LinkChecker();
         $linkChecker->setHttpClient($httpClient);
         $userAgentHeaderValues = $linkChecker->getHttpClient()->get()->getHeader('user-agent')->toArray();      
         $this->assertEquals(self::TEST_USER_AGENT, $userAgentHeaderValues[0]);

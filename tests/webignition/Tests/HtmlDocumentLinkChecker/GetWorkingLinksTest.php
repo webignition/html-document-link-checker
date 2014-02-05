@@ -1,9 +1,9 @@
 <?php
 
-namespace webignition\Tests\HtmlDocumentLinkChecker;
+namespace webignition\Tests\HtmlDocument\LinkChecker;
 
-use webignition\HtmlDocumentLinkChecker\LinkCheckResult;
-use webignition\HtmlDocumentLinkChecker\LinkState;
+use webignition\HtmlDocument\LinkChecker\LinkResult;
+use webignition\HtmlDocument\LinkChecker\LinkState;
 use webignition\WebResource\WebPage\WebPage;
 
 class GetWorkingLinksTest extends BaseTest {
@@ -42,9 +42,9 @@ class GetWorkingLinksTest extends BaseTest {
         $checker->setWebPage($webPage);
         
         $this->assertEquals(array(
-            new LinkCheckResult('http://www.youtube.com/example', '<a href="http://www.youtube.com/example"><img src="/images/youtube.png"></a>', new LinkState(LinkState::TYPE_HTTP, 200)),
-            new LinkCheckResult('http://twitter.com/example', '<a href="http://twitter.com/example"><img src="/images/twitter.png"></a>', new LinkState(LinkState::TYPE_HTTP, 200)),
-            new LinkCheckResult('http://example.com/images/twitter.png', '<img src="/images/twitter.png">', new LinkState(LinkState::TYPE_HTTP, 200)),
+            new LinkResult('http://www.youtube.com/example', '<a href="http://www.youtube.com/example"><img src="/images/youtube.png"></a>', new LinkState(LinkState::TYPE_HTTP, 200)),
+            new LinkResult('http://twitter.com/example', '<a href="http://twitter.com/example"><img src="/images/twitter.png"></a>', new LinkState(LinkState::TYPE_HTTP, 200)),
+            new LinkResult('http://example.com/images/twitter.png', '<img src="/images/twitter.png">', new LinkState(LinkState::TYPE_HTTP, 200)),
         ), $checker->getWorking());        
     }
 
@@ -107,8 +107,8 @@ class GetWorkingLinksTest extends BaseTest {
         $checker->setWebPage($webPage);
         
         $this->assertEquals(array(
-            new LinkCheckResult('http://example.com/images/youtube.png', '<img src="/images/youtube.png">', new LinkState(LinkState::TYPE_HTTP, 200)),
-            new LinkCheckResult('http://example.com/images/twitter.png', '<img src="/images/twitter.png">', new LinkState(LinkState::TYPE_HTTP, 200)),
+            new LinkResult('http://example.com/images/youtube.png', '<img src="/images/youtube.png">', new LinkState(LinkState::TYPE_HTTP, 200)),
+            new LinkResult('http://example.com/images/twitter.png', '<img src="/images/twitter.png">', new LinkState(LinkState::TYPE_HTTP, 200)),
         ), $checker->getWorking());        
     }    
     
