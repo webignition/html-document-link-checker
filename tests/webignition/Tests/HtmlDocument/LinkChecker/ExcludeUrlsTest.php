@@ -17,7 +17,7 @@ class ExcludeUrlsTest extends BaseTest {
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
-        $checker->setUrlsToExclude(array(
+        $checker->getConfiguration()->setUrlsToExclude(array(
             'http://example.com/foo',
             'http://example.com/bar'
         ));

@@ -1,59 +1,18 @@
 <?php
 namespace webignition\HtmlDocument\LinkChecker;
 
+use webignition\HtmlDocument\LinkChecker\Configuration;
+
 class LinkChecker {           
     
-    const URL_SCHEME_MAILTO = 'mailto';
-    const URL_SCHEME_ABOUT = 'about';
-    const URL_SCEME_JAVASCRIPT = 'javascript';
     const HTTP_STATUS_CODE_OK = 200;
     const HTTP_STATUS_CODE_METHOD_NOT_ALLOWED = 405;
     const HTTP_STATUS_CODE_NOT_IMPLEMENTED = 501;
-    
-    const HTTP_METHOD_HEAD = 'HEAD';
-    const HTTP_METHOD_GET = 'GET';
     
     const CURL_MALFORMED_URL_CODE = 3;
     const CURL_MALFORMED_URL_MESSAGE = 'The URL was not properly formatted.';   
     
     const BAD_REQUEST_LIMIT = 3;
-    
-    const DEFAULT_REQUEST_TIMEOUT = 10;    
-    const DEFAULT_REQUEST_CONNECT_TIMEOUT = 10;    
-    
-    /**
-     *
-     * @var array
-     */
-    private $userAgents = array();
-    
-    
-    /**
-     *
-     * @var array
-     */
-    private $httpMethodList = array(
-        self::HTTP_METHOD_HEAD,
-        self::HTTP_METHOD_GET
-    );
-    
-    
-    /**
-     *
-     * @var array
-     */
-    private $schemesToExclude = array(
-        self::URL_SCHEME_MAILTO,
-        self::URL_SCHEME_ABOUT,
-        self::URL_SCEME_JAVASCRIPT
-    );
-    
-    
-    /**
-     *
-     * @var \Guzzle\Http\Client 
-     */
-    private $httpClient = null;
     
     
     /**
@@ -81,134 +40,26 @@ class LinkChecker {
      *
      * @var array
      */
-    private $urlsToExclude = array();
-    
-    
-    /**
-     *
-     * @var array
-     */
-    private $domainsToExclude = array();
-    
-    
-    /**
-     *
-     * @var array
-     */
     private $badRequestCount = 0;
     
     
     /**
      *
-     * @var boolean
+     * @var \webignition\HtmlDocument\LinkChecker\Configuration 
      */
-    private $retryOnBadResponse = true;
-    
-    
-    /**
-     *
-     * @var boolean
-     */
-    private $toggleUrlEncoding = false;
-    
-
-    /**
-     *
-     * @var array
-     */
-    private $requestOptions = array(
-        'timeout'         => self::DEFAULT_REQUEST_TIMEOUT,
-        'connect_timeout' => self::DEFAULT_REQUEST_CONNECT_TIMEOUT        
-    );
-    
-    
-    public function enableToggleUrlEncoding() {
-        $this->toggleUrlEncoding = true;
-    }
-    
-    
-    public function disableToggleUrlEncoding() {
-        $this->toggleUrlEncoding = false;
-    }    
+    private $configuration;
     
     
     /**
      * 
-     * @return boolean
+     * @return \webignition\HtmlDocument\LinkChecker\Configuration
      */
-    public function getToggleUrlEncoding() {
-        return $this->toggleUrlEncoding;
-    }
-    
-    
-    /**
-     * 
-     * @param array $options
-     */
-    public function setRequestOptions($options) {
-        $this->requestOptions = $options;
-    }
-    
-    
-    /**
-     * 
-     * @return array
-     */
-    public function getRequestOptions() {
-        return $this->requestOptions;
-    }
-    
-    
-    /**
-     * 
-     * @param boolean $retryOnBadResponse
-     */
-    public function setRetryOnBadResponse($retryOnBadResponse) {
-        $this->retryOnBadResponse = $retryOnBadResponse;
-    }
-    
-    
-    /**
-     * 
-     * @param array $httpMethodList
-     */
-    public function setHttpMethodList($httpMethodList) {
-        $this->httpMethodList = $httpMethodList;
-    }
-    
-    
-    /**
-     * 
-     * @param array $userAgents
-     */
-    public function setUserAgents($userAgents) {
-        $this->userAgents = $userAgents;
-    }
-    
-    
-    /**
-     * 
-     * @param \Guzzle\Http\Client $httpClient
-     */
-    public function setHttpClient(\Guzzle\Http\Client $httpClient) {
-        $this->httpClient = $httpClient;
-    }
-    
-    
-    /**
-     * 
-     * @return \Guzzle\Http\Client
-     */
-    public function getHttpClient() {
-        if (is_null($this->httpClient)) {
-            $this->httpClient = new \Guzzle\Http\Client();
+    public function getConfiguration() {
+        if (is_null($this->configuration)) {
+            $this->configuration = new Configuration();
         }
         
-        if (is_null($this->getHttpClientHistory())) {
-            $this->httpClient->addSubscriber(new \Guzzle\Plugin\History\HistoryPlugin());
-        }
-        
-        return $this->httpClient;
+        return $this->configuration;
     }
     
     
@@ -217,7 +68,7 @@ class LinkChecker {
      * @return \Guzzle\Plugin\History\HistoryPlugin
      */
     private function getHttpClientHistory() {
-        $requestSentListeners = $this->httpClient->getEventDispatcher()->getListeners('request.sent');
+        $requestSentListeners = $this->getConfiguration()->getBaseRequest()->getEventDispatcher()->getListeners('request.sent');
         foreach ($requestSentListeners as $requestSentListener) {
             if ($requestSentListener[0] instanceof \Guzzle\Plugin\History\HistoryPlugin) {
                 return $requestSentListener[0];
@@ -235,24 +86,6 @@ class LinkChecker {
     public function setWebPage(\webignition\WebResource\WebPage\WebPage $webPage) {
         $this->webPage = $webPage;
         $this->linkCheckResults = null;        
-    }
-    
-    
-    /**
-     * 
-     * @param array $urlsToExclude
-     */
-    public function setUrlsToExclude($urlsToExclude) {
-        $this->urlsToExclude = $urlsToExclude;
-    }
-    
-    
-    /**
-     * 
-     * @param array $domainsToExclude
-     */
-    public function setDomainsToExclude($domainsToExclude) {
-        $this->domainsToExclude = $domainsToExclude;
     }
     
     
@@ -391,7 +224,7 @@ class LinkChecker {
         $requests = $this->buildRequestSet($url);
         
         try {
-            foreach ($requests as $requestIndex => $request) {               
+            foreach ($requests as $request) {               
                 $response = $this->getHttpResponse($request);
                 
                 if ($response->getStatusCode() === self::HTTP_STATUS_CODE_OK) {
@@ -412,26 +245,24 @@ class LinkChecker {
      * @return \Guzzle\Http\Message\Request[]
      */
     private function buildRequestSet($url) {        
-        $useEncodingOptions = ($this->getToggleUrlEncoding())
+        $useEncodingOptions = ($this->getConfiguration()->getToggleUrlEncoding())
             ? array(true, false)
             : array(true);
         
         $requests = array();
         
-        $userAgentSelection = $this->getUserAgentSelectionForRequest();
+        $userAgentSelection = $this->getConfiguration()->getUserAgentSelectionForRequest();
         
         foreach ($userAgentSelection as $userAgent) {
-            foreach ($this->httpMethodList as $methodIndex => $method) {
+            foreach ($this->getConfiguration()->getHttpMethodList() as $methodIndex => $method) {
                 foreach ($useEncodingOptions as $useEncoding) {
                     $requestUrl = \Guzzle\Http\Url::factory($url);
                     $requestUrl->getQuery()->useUrlEncoding($useEncoding);
-
-                    $request = $this->getHttpClient()->createRequest($method, $url, array(
-                        'Referer' => $this->webPage->getUrl()
-                    ), null, $this->getRequestOptions());                    
                     
-                    $request->setUrl($requestUrl);    
-                    $request->setHeader('user-agent', $userAgent);
+                    $request = clone $this->getConfiguration()->getBaseRequest();
+                    $request->setUrl($requestUrl);
+                    $request->setHeader('user-agent', $userAgent);                    
+                    $request->setHeader('Referer', $this->webPage->getUrl());
                     
                     $requests[] = $request;
                 }
@@ -439,8 +270,7 @@ class LinkChecker {
         }
         
         return $requests;       
-    }
-    
+    }   
     
     
     /**
@@ -451,46 +281,6 @@ class LinkChecker {
     private function hasLinkStateForUrl($url) {        
         return isset($this->urlToLinkStateMap[$url]);
     }
-    
-    
-    /**
-     * 
-     * @param string $url
-     * @param string $method
-     * @return \Guzzle\Http\Message\Response
-     */
-    private function getResponseForHttpMethod($url, $method) {                
-        $requestUrl = \Guzzle\Http\Url::factory($url);
-        $requestUrl->getQuery()->useUrlEncoding(false);
-        
-        $request = $this->getHttpClient()->createRequest($method, $url, array(
-            'Referer' => $this->webPage->getUrl()
-        ), null, $this->getRequestOptions());
-        
-        $request->setUrl($requestUrl);
-        
-        echo $request->send();
-        exit();
-        
-        $userAgentSelection = $this->getUserAgentSelectionForRequest($request);        
-        
-        foreach ($userAgentSelection as $userAgentIndex => $userAgent) {
-            $isLastUserAgent = $userAgentIndex == count($userAgentSelection) - 1;
-            $request->setHeader('user-agent', $userAgent);
-            
-            $this->badRequestCount = 0;
-            $response =  $this->getHttpResponse($request);
-            
-            if (!$this->isStrictHttpErrorStatusCode($response->getStatusCode())) {
-                return $response;
-            }
-            
-            if ($isLastUserAgent) {
-                return $response;
-            }           
-        }    
-    }   
-    
     
     
     /**
@@ -525,7 +315,7 @@ class LinkChecker {
      * @return boolean
      */
     private function isBadRequestLimitReached() {
-        if ($this->retryOnBadResponse === false) {
+        if ($this->getConfiguration()->getRetryOnBadResponse() === false) {
             return true;
         }
         
@@ -542,19 +332,7 @@ class LinkChecker {
         $curlException->setError(self::CURL_MALFORMED_URL_MESSAGE, self::CURL_MALFORMED_URL_CODE);
         return $curlException;
     }
-    
-    
-    /**
-     * 
-     * @return array
-     */
-    private function getUserAgentSelectionForRequest() {
-        if (count($this->userAgents)) {
-            return $this->userAgents;
-        }
-        
-        return $this->getHttpClient()->get()->getHeader('User-Agent')->toArray();     
-    }
+
     
     
     /**
@@ -568,7 +346,7 @@ class LinkChecker {
             return false;
         }
         
-        if (in_array($url, $this->urlsToExclude)) {
+        if (in_array($url, $this->getConfiguration()->getUrlsToExclude())) {
             return false;
         }
         
@@ -586,7 +364,7 @@ class LinkChecker {
      * @return boolean
      */
     private function isUrlSchemeToBeIncluded(\webignition\NormalisedUrl\NormalisedUrl $url) {
-        return !in_array($url->getScheme(), $this->schemesToExclude);
+        return !in_array($url->getScheme(), $this->getConfiguration()->getSchemesToExclude());
     }
     
     
@@ -596,7 +374,7 @@ class LinkChecker {
      * @return boolean
      */
     private function isUrlDomainToBeIncluded(\webignition\NormalisedUrl\NormalisedUrl $url) {
-        return !in_array($url->getHost(), $this->domainsToExclude);
+        return !in_array($url->getHost(), $this->getConfiguration()->getDomainsToExclude());
     }
     
 }

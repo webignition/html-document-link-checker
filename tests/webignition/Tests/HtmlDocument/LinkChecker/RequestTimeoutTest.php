@@ -6,9 +6,9 @@ use webignition\WebResource\WebPage\WebPage;
 use webignition\HtmlDocument\LinkChecker\LinkResult;
 use webignition\HtmlDocument\LinkChecker\LinkState;
 
-class RequestOptionsTest extends BaseTest {
+class RequestTimeoutTest extends BaseTest {
     
-    public function testSettingLowTimeoutCausesTimeout() {        
+    public function testSettingLowTimeoutCausesTimeout() {
         $webPage = new WebPage();
         $webPage->setUrl('http://www.americanexpress.com/');
         $webPage->setContent($this->getHtmlDocumentFixture('example14'));
@@ -16,10 +16,12 @@ class RequestOptionsTest extends BaseTest {
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
 
-        $requestOptions = $checker->getRequestOptions();
-        $requestOptions['timeout'] = 0.001;
-        $requestOptions['connect_timeout'] = 0.001;
-        $checker->setRequestOptions($requestOptions);
+        $baseRequest = $this->getHttpClient()->createRequest('GET', $webPage->getUrl(), array(), null, array(
+            'timeout'         => 0.001,
+            'connect_timeout' => 0.001            
+        )); 
+        
+        $checker->getConfiguration()->setBaseRequest($baseRequest);
         
         $this->assertEquals(array(
             new LinkResult(

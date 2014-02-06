@@ -17,7 +17,7 @@ class ExcludeDomainsTest extends BaseTest {
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
-        $checker->setDomainsToExclude(array(
+        $checker->getConfiguration()->setDomainsToExclude(array(
             'foo.com',
         ));
         

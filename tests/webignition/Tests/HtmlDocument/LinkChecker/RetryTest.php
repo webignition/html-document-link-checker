@@ -19,7 +19,7 @@ class RetryTest extends BaseTest {
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
-        $checker->setRetryOnBadResponse(true);
+        $checker->getConfiguration()->enableRetryOnBadResponse();
         
         $this->assertEquals(0, count($checker->getErrored()));
     }     
@@ -37,7 +37,7 @@ class RetryTest extends BaseTest {
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
-        $checker->setRetryOnBadResponse(true);
+        $checker->getConfiguration()->enableRetryOnBadResponse();
         
         $this->assertEquals(1, count($checker->getErrored()));        
     }
@@ -54,7 +54,7 @@ class RetryTest extends BaseTest {
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
-        $checker->setRetryOnBadResponse(false);
+        $checker->getConfiguration()->disableRetryOnBadResponse();
         
         $erroredLinks = $checker->getErrored();        
         

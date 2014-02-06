@@ -167,7 +167,6 @@ class GetLinkStatesTest extends BaseTest {
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
-        $checker->setHttpClient($this->getHttpClient());
         
         $this->assertEquals(30, count($checker->getAll()));
     }    
