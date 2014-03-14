@@ -85,6 +85,13 @@ class Configuration {
     
     
     /**
+     *
+     * @var array
+     */
+    private $cookies = array();    
+    
+    
+    /**
      * 
      * @param \Guzzle\Http\Message\Request $request
      * @return \webignition\HtmlDocument\LinkChecker\Configuration
@@ -281,5 +288,24 @@ class Configuration {
     public function getSchemesToExclude() {
         return $this->schemesToExclude;
     }
+    
+    /**
+     * 
+     * @param array $cookies
+     * @return \webignition\CssValidatorWrapper\Configuration\Configuration
+     */
+    public function setCookies($cookies) {
+        $this->cookies = $cookies;
+        return $this;
+    }
+    
+    
+    /**
+     * 
+     * @return array
+     */
+    public function getCookies() {
+        return $this->cookies;
+    }    
     
 }
