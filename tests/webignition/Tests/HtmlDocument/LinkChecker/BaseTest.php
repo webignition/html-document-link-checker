@@ -38,6 +38,23 @@ abstract class BaseTest extends \PHPUnit_Framework_TestCase {
     
     /**
      * 
+     * @return \Guzzle\Plugin\History\HistoryPlugin|null
+     */
+    protected function getHttpHistory() {
+        $listenerCollections = $this->getHttpClient()->getEventDispatcher()->getListeners('request.sent');
+        
+        foreach ($listenerCollections as $listener) {
+            if ($listener[0] instanceof \Guzzle\Plugin\History\HistoryPlugin) {
+                return $listener[0];
+            }
+        }
+        
+        return null;     
+    }     
+    
+    
+    /**
+     * 
      * @param array $httpMessages
      */
     protected function loadHttpClientFixtures($items) {

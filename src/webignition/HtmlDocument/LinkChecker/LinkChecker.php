@@ -264,6 +264,8 @@ class LinkChecker {
                     $request->setHeader('user-agent', $userAgent);                    
                     $request->setHeader('Referer', $this->webPage->getUrl());
                     
+                    $this->setRequestCookies($request);
+                    
                     $requests[] = $request;
                 }
             }
@@ -271,6 +273,23 @@ class LinkChecker {
         
         return $requests;       
     }   
+    
+    private function setRequestCookies(\Guzzle\Http\Message\Request $request) {
+        if (!is_null($request->getCookies())) {
+            foreach ($request->getCookies() as $name => $value) {
+                $request->removeCookie($name);
+            }
+        }
+        
+        
+        $cookieUrlMatcher = new \webignition\Cookie\UrlMatcher\UrlMatcher();
+        
+        foreach ($this->getConfiguration()->getCookies() as $cookie) {
+            if ($cookieUrlMatcher->isMatch($cookie, $request->getUrl())) {
+                $request->addCookie($cookie['name'], $cookie['value']);
+            }
+        } 
+    }
     
     
     /**
