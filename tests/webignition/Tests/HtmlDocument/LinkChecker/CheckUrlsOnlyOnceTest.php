@@ -11,11 +11,10 @@ class CheckUrlsOnlyOnceTest extends BaseTest {
             'HTTP/1.1 200 Ok',
             'HTTP/1.1 200 Ok',
             'HTTP/1.1 200 Ok'            
-        ));
+        ));      
         
         $webPage = new WebPage();
-        $webPage->setUrl('http://example.com');
-        $webPage->setContent($this->getHtmlDocumentFixture('example07'));
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example07', 'http://example.com'));
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);

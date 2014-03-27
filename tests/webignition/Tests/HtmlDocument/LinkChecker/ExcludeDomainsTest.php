@@ -12,9 +12,8 @@ class ExcludeDomainsTest extends BaseTest {
         ));
         
         $webPage = new WebPage();
-        $webPage->setUrl('http://example.com');
-        $webPage->setContent($this->getHtmlDocumentFixture('example13'));
-        
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example13', 'http://example.com'));
+
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
         $checker->getConfiguration()->setDomainsToExclude(array(

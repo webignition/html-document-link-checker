@@ -24,6 +24,20 @@ abstract class BaseTest extends \PHPUnit_Framework_TestCase {
     
     /**
      * 
+     * @param string $name
+     * @param string $effectiveUrl
+     * @return \Guzzle\Http\Message\Response
+     */
+    protected function getHttpFixtureFromHtmlDocument($name, $effectiveUrl) {
+        $response = \Guzzle\Http\Message\Response::fromMessage("HTTP/1.0 200 OK\nContent-Type:text/html\n\n" . $this->getHtmlDocumentFixture($name));
+        $response->setEffectiveUrl($effectiveUrl);
+        
+        return $response;      
+    }
+    
+    
+    /**
+     * 
      * @return \Guzzle\Http\Client
      */
     protected function getHttpClient() {

@@ -16,11 +16,10 @@ class CountRedirectAsErrorTest extends BaseTest {
             "HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect1\r\nContent-Length: 0\r\n\r\n",
             "HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect1\r\nContent-Length: 0\r\n\r\n",
             "HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect1\r\nContent-Length: 0\r\n\r\n"
-        ));
+        ));     
         
         $webPage = new WebPage();
-        $webPage->setUrl('http://example.com/foo');
-        $webPage->setContent($this->getHtmlDocumentFixture('example10'));
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example10', 'http://example.com/foo'));
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);

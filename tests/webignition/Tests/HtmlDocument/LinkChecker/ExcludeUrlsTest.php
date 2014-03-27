@@ -12,8 +12,7 @@ class ExcludeUrlsTest extends BaseTest {
         ));
         
         $webPage = new WebPage();
-        $webPage->setUrl('http://example.com');
-        $webPage->setContent($this->getHtmlDocumentFixture('example08'));
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example08', 'http://example.com'));        
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);

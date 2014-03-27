@@ -10,13 +10,12 @@ class RequestTimeoutTest extends BaseTest {
     
     public function testSettingLowTimeoutCausesTimeout() {
         $webPage = new WebPage();
-        $webPage->setUrl('http://www.americanexpress.com/');
-        $webPage->setContent($this->getHtmlDocumentFixture('example14'));
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example14', 'http://example.com/'));  
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
 
-        $baseRequest = $this->getHttpClient()->createRequest('GET', $webPage->getUrl(), array(), null, array(
+        $baseRequest = $this->getHttpClient()->createRequest('GET', $webPage->getHttpResponse()->getEffectiveUrl(), array(), null, array(
             'timeout'         => 0.001,
             'connect_timeout' => 0.001            
         )); 

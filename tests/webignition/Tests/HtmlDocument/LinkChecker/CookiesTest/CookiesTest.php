@@ -34,11 +34,10 @@ abstract class CookiesTest extends BaseTest {
             'HTTP/1.1 200 Ok',
             'HTTP/1.1 200 Ok',
             'HTTP/1.1 200 Ok'
-        ));       
+        ));
         
         $webPage = new WebPage();
-        $webPage->setUrl('http://example.com');
-        $webPage->setContent($this->getHtmlDocumentFixture('example16'));
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example16', 'http://example.com'));
         
         $checker = $this->getDefaultChecker();
         $checker->getConfiguration()->setCookies($this->getCookies());

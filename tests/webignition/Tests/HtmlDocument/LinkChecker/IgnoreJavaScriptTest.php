@@ -8,8 +8,7 @@ class IgnoreJavaScriptTest extends BaseTest {
     
     public function testIgnoreJavascriptColonAnything() {        
         $webPage = new WebPage();
-        $webPage->setUrl('http://example.com');
-        $webPage->setContent($this->getHtmlDocumentFixture('example11'));
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example11', 'http://example.com/'));  
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);

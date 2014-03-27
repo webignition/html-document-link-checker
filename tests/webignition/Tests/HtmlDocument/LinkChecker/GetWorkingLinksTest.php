@@ -15,8 +15,7 @@ class GetWorkingLinksTest extends BaseTest {
     
     public function testWithNoLinks() {
         $webPage = new WebPage();
-        $webPage->setUrl('http://example.com/');
-        $webPage->setContent($this->getHtmlDocumentFixture('example03'));
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example03', 'http://example.com/'));        
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
@@ -35,8 +34,7 @@ class GetWorkingLinksTest extends BaseTest {
         ));
         
         $webPage = new WebPage();
-        $webPage->setUrl('http://example.com/');
-        $webPage->setContent($this->getHtmlDocumentFixture('example01'));
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example01', 'http://example.com/'));        
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
@@ -70,8 +68,7 @@ class GetWorkingLinksTest extends BaseTest {
         ));
         
         $webPage = new WebPage();
-        $webPage->setUrl('http://example.com/');
-        $webPage->setContent($this->getHtmlDocumentFixture('example01'));
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example01', 'http://example.com/'));          
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
@@ -100,8 +97,7 @@ class GetWorkingLinksTest extends BaseTest {
         ));      
         
         $webPage = new WebPage();
-        $webPage->setUrl('http://example.com/');
-        $webPage->setContent($this->getHtmlDocumentFixture('example01'));
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example01', 'http://example.com/'));  
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);

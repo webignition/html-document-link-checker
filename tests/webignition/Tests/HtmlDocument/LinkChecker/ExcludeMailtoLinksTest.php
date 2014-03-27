@@ -9,11 +9,10 @@ class ExcludeMailtoLinksTest extends BaseTest {
     public function testExcludeMailtoLinks() {
         $this->loadHttpClientFixtures(array(
             'HTTP/1.1 200 Ok'
-        ));        
+        ));    
         
         $webPage = new WebPage();
-        $webPage->setUrl('http://example.com/');
-        $webPage->setContent($this->getHtmlDocumentFixture('example05'));
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example05', 'http://example.com'));        
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);

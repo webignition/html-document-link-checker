@@ -15,8 +15,7 @@ class DontReuseFailedLinkStateTest extends BaseTest {
         ));
         
         $webPage = new WebPage();
-        $webPage->setUrl('http://example.com');
-        $webPage->setContent($this->getHtmlDocumentFixture('example12'));
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example12', 'http://example.com'));
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);

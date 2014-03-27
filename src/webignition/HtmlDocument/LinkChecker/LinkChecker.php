@@ -103,8 +103,8 @@ class LinkChecker {
 
             $linkFinder = new \webignition\HtmlDocumentLinkUrlFinder\HtmlDocumentLinkUrlFinder();
 
-            $linkFinder->setSourceUrl($this->webPage->getUrl());
-            $linkFinder->setSourceContent($this->webPage->getContent());
+            $linkFinder->setSourceUrl($this->webPage->getHttpResponse()->getEffectiveUrl());
+            $linkFinder->setSourceContent($this->webPage->getHttpResponse()->getBody(true));
 
             if (!$linkFinder->hasUrls()) {
                 return $this->linkCheckResults;          
@@ -262,7 +262,7 @@ class LinkChecker {
                     $request = clone $this->getConfiguration()->getBaseRequest();
                     $request->setUrl($requestUrl);
                     $request->setHeader('user-agent', $userAgent);                    
-                    $request->setHeader('Referer', $this->webPage->getUrl());
+                    $request->setHeader('Referer', $this->webPage->getHttpResponse()->getEffectiveUrl());
                     
                     $this->setRequestCookies($request);
                     

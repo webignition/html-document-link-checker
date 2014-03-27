@@ -12,10 +12,9 @@ class GetLinkStatesTest extends BaseTest {
         $this->assertEquals(array(), $this->getDefaultChecker()->getAll());     
     }
     
-    public function testWithNoLinks() {
+    public function testWithNoLinks() {        
         $webPage = new WebPage();
-        $webPage->setUrl('http://example.com/');
-        $webPage->setContent($this->getHtmlDocumentFixture('example03'));
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example03', 'http://example.com/'));        
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
@@ -35,8 +34,7 @@ class GetLinkStatesTest extends BaseTest {
         ));
         
         $webPage = new WebPage();
-        $webPage->setUrl('http://example.com/');
-        $webPage->setContent($this->getHtmlDocumentFixture('example01'));
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example01', 'http://example.com/'));
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
@@ -72,8 +70,7 @@ class GetLinkStatesTest extends BaseTest {
         ));
         
         $webPage = new WebPage();
-        $webPage->setUrl('http://example.com/');
-        $webPage->setContent($this->getHtmlDocumentFixture('example01'));
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example01', 'http://example.com/'));        
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
@@ -106,11 +103,10 @@ class GetLinkStatesTest extends BaseTest {
             'HTTP/1.1 500 Internal Server Error',     
             'HTTP/1.1 400 Bad Request',            
             'HTTP/1.1 200 Ok',
-        ));      
+        ));
         
         $webPage = new WebPage();
-        $webPage->setUrl('http://example.com/');
-        $webPage->setContent($this->getHtmlDocumentFixture('example01'));
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example01', 'http://example.com/'));        
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
@@ -159,11 +155,10 @@ class GetLinkStatesTest extends BaseTest {
             'HTTP/1.1 200 Ok',
             'HTTP/1.1 200 Ok',
             'HTTP/1.1 200 Ok',
-        ));      
+        ));
         
         $webPage = new WebPage();
-        $webPage->setUrl('http://example.com/');
-        $webPage->setContent($this->getHtmlDocumentFixture('example04'));
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example04', 'http://example.com/'));        
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);

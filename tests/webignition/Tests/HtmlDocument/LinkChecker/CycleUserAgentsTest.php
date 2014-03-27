@@ -13,8 +13,7 @@ class CycleUserAgentsTest extends BaseTest {
         ));
         
         $webPage = new WebPage();
-        $webPage->setUrl('http://example.com/foo');
-        $webPage->setContent($this->getHtmlDocumentFixture('example10'));
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example10', 'http://example.com/foo'));
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);

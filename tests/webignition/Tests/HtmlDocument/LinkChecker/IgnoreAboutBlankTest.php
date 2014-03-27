@@ -8,8 +8,7 @@ class IgnoreAboutBlankTest extends BaseTest {
     
     public function testIgnoreAboutBlank() {        
         $webPage = new WebPage();
-        $webPage->setUrl('http://example.com');
-        $webPage->setContent($this->getHtmlDocumentFixture('example09'));
+        $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example09', 'http://example.com/'));  
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
