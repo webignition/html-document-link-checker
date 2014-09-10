@@ -88,7 +88,13 @@ class Configuration {
      *
      * @var array
      */
-    private $cookies = array();    
+    private $cookies = array();
+
+
+    /**
+     * @var bool
+     */
+    private $ignoreFragmentInUrlComparison = false;
     
     
     /**
@@ -292,7 +298,7 @@ class Configuration {
     /**
      * 
      * @param array $cookies
-     * @return \webignition\CssValidatorWrapper\Configuration\Configuration
+     * @return Configuration
      */
     public function setCookies($cookies) {
         $this->cookies = $cookies;
@@ -306,6 +312,32 @@ class Configuration {
      */
     public function getCookies() {
         return $this->cookies;
-    }    
+    }
+
+
+    /**
+     * @return Configuration
+     */
+    public function enableIgnoreFragmentInUrlComparison() {
+        $this->ignoreFragmentInUrlComparison = true;
+        return $this;
+    }
+
+
+    /**
+     * @return Configuration
+     */
+    public function disableIgnoreFragmentInUrlComparison() {
+        $this->ignoreFragmentInUrlComparison = false;
+        return $this;
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function ignoreFragmentInUrlComparison() {
+        return $this->ignoreFragmentInUrlComparison;
+    }
     
 }

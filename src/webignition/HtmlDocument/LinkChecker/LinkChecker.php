@@ -1,9 +1,20 @@
 <?php
 namespace webignition\HtmlDocument\LinkChecker;
 
-use webignition\HtmlDocument\LinkChecker\Configuration;
+use Guzzle\Common\Exception\InvalidArgumentException;
+use Guzzle\Http\Exception\BadResponseException;
+use Guzzle\Http\Exception\CurlException;
+use Guzzle\Http\Exception\TooManyRedirectsException;
+use Guzzle\Plugin\History\HistoryPlugin;
+use webignition\Cookie\UrlMatcher\UrlMatcher;
+use webignition\HtmlDocumentLinkUrlFinder\HtmlDocumentLinkUrlFinder;
+use webignition\NormalisedUrl\NormalisedUrl;
+use webignition\WebResource\WebPage\WebPage;
+use Guzzle\Http\Message\Request as GuzzleRequest;
+use Guzzle\Http\Message\Response as GuzzleResponse;
+use Guzzle\Http\Url as GuzzleUrl;
 
-class LinkChecker {           
+class LinkChecker {
     
     const HTTP_STATUS_CODE_OK = 200;
     const HTTP_STATUS_CODE_METHOD_NOT_ALLOWED = 405;
@@ -17,7 +28,7 @@ class LinkChecker {
     
     /**
      *
-     * @var \webignition\WebResource\WebPage\WebPage
+     * @var WebPage
      */
     private $webPage = null;
     
@@ -45,14 +56,14 @@ class LinkChecker {
     
     /**
      *
-     * @var \webignition\HtmlDocument\LinkChecker\Configuration 
+     * @var Configuration
      */
     private $configuration;
     
     
     /**
      * 
-     * @return \webignition\HtmlDocument\LinkChecker\Configuration
+     * @return Configuration
      */
     public function getConfiguration() {
         if (is_null($this->configuration)) {
@@ -65,12 +76,12 @@ class LinkChecker {
     
     /**
      * 
-     * @return \Guzzle\Plugin\History\HistoryPlugin
+     * @return HistoryPlugin
      */
     private function getHttpClientHistory() {
         $requestSentListeners = $this->getConfiguration()->getBaseRequest()->getEventDispatcher()->getListeners('request.sent');
         foreach ($requestSentListeners as $requestSentListener) {
-            if ($requestSentListener[0] instanceof \Guzzle\Plugin\History\HistoryPlugin) {
+            if ($requestSentListener[0] instanceof HistoryPlugin) {
                 return $requestSentListener[0];
             }
         }
@@ -81,9 +92,9 @@ class LinkChecker {
     
     /**
      * 
-     * @param \webignition\WebResource\WebPage\WebPage $webPage
+     * @param WebPage $webPage
      */
-    public function setWebPage(\webignition\WebResource\WebPage\WebPage $webPage) {
+    public function setWebPage(WebPage $webPage) {
         $this->webPage = $webPage;
         $this->linkCheckResults = null;        
     }
@@ -101,18 +112,17 @@ class LinkChecker {
                 return $this->linkCheckResults;
             }
 
-            $linkFinder = new \webignition\HtmlDocumentLinkUrlFinder\HtmlDocumentLinkUrlFinder();
-
-            $linkFinder->setSourceUrl($this->webPage->getHttpResponse()->getEffectiveUrl());
-            $linkFinder->setSourceContent($this->webPage->getHttpResponse()->getBody(true));
+            $linkFinder = new HtmlDocumentLinkUrlFinder();
+            $linkFinder->getConfiguration()->setSourceUrl($this->webPage->getHttpResponse()->getEffectiveUrl());
+            $linkFinder->getConfiguration()->setSourceContent($this->webPage->getHttpResponse()->getBody(true));
 
             if (!$linkFinder->hasUrls()) {
                 return $this->linkCheckResults;          
             }
 
-            foreach ($linkFinder->getAll() as $link) {                             
-                $link['url'] = rawurldecode($link['url']);                
-                
+            foreach ($linkFinder->getAll() as $link) {
+                $link['url'] = rawurldecode($link['url']);
+
                 if ($this->isUrlToBeIncluded($link['url'])) {
                     $this->linkCheckResults[] = new LinkResult($link['url'], $link['element'], $this->getLinkState($link['url']));
                 }
@@ -130,7 +140,7 @@ class LinkChecker {
     public function getErrored() {
         $links = array();
         foreach ($this->getAll() as $linkCheckResult) {
-            /* @var $linkCheckResult LinkCheckResult */
+            /* @var $linkCheckResult LinkResult */
             if ($this->isErrored($linkCheckResult->getLinkState())) {
                 $links[] = $linkCheckResult;
             }
@@ -165,7 +175,7 @@ class LinkChecker {
     public function getWorking() {
         $links = array();
         foreach ($this->getAll() as $linkCheckResult) {
-            /* @var $linkCheckResult LinkCheckResult */
+            /* @var $linkCheckResult LinkResult */
             if (!$this->isErrored($linkCheckResult->getLinkState())) {
                 $links[] = $linkCheckResult;
             }
@@ -173,17 +183,7 @@ class LinkChecker {
         
         return $links;       
     }
-    
-    
-    /**
-     * 
-     * @param int $statusCode
-     * @return boolean
-     */
-    private function isStrictHttpErrorStatusCode($statusCode) {        
-        return in_array(substr((string)$statusCode, 0, 1), array('4', '5'));
-    }    
-    
+
     
     /**
      * 
@@ -202,13 +202,13 @@ class LinkChecker {
      */
     private function getLinkState($url) {        
         if ($this->hasLinkStateForUrl($url)) {
-            return $this->urlToLinkStateMap[$url];
-        }        
+            return $this->urlToLinkStateMap[$this->getComparisonUrl($url)];
+        }
 
         $linkState = $this->deriveLinkState($url);
 
         if (!$this->isErrored($linkState)) {
-            $this->urlToLinkStateMap[$url] = $linkState;
+            $this->urlToLinkStateMap[$this->getComparisonUrl($url)] = $linkState;
         }
 
         return $linkState;
@@ -231,7 +231,7 @@ class LinkChecker {
                     return new LinkState(LinkState::TYPE_HTTP, $response->getStatusCode());
                 }
             }           
-        } catch (\Guzzle\Http\Exception\CurlException $curlException) {
+        } catch (CurlException $curlException) {
             return new LinkState(LinkState::TYPE_CURL, $curlException->getErrorNo());
         }
         
@@ -241,7 +241,7 @@ class LinkChecker {
     
     /**
      * 
-     * @param type $url
+     * @param string $url
      * @return \Guzzle\Http\Message\Request[]
      */
     private function buildRequestSet($url) {        
@@ -256,7 +256,7 @@ class LinkChecker {
         foreach ($userAgentSelection as $userAgent) {
             foreach ($this->getConfiguration()->getHttpMethodList() as $methodIndex => $method) {
                 foreach ($useEncodingOptions as $useEncoding) {
-                    $requestUrl = \Guzzle\Http\Url::factory($url);
+                    $requestUrl = GuzzleUrl::factory($url);
                     $requestUrl->getQuery()->useUrlEncoding($useEncoding);
                     
                     $request = clone $this->getConfiguration()->getBaseRequest();
@@ -274,7 +274,7 @@ class LinkChecker {
         return $requests;       
     }   
     
-    private function setRequestCookies(\Guzzle\Http\Message\Request $request) {
+    private function setRequestCookies(GuzzleRequest $request) {
         if (!is_null($request->getCookies())) {
             foreach ($request->getCookies() as $name => $value) {
                 $request->removeCookie($name);
@@ -282,7 +282,7 @@ class LinkChecker {
         }
         
         
-        $cookieUrlMatcher = new \webignition\Cookie\UrlMatcher\UrlMatcher();
+        $cookieUrlMatcher = new UrlMatcher();
         
         foreach ($this->getConfiguration()->getCookies() as $cookie) {
             if ($cookieUrlMatcher->isMatch($cookie, $request->getUrl())) {
@@ -297,22 +297,42 @@ class LinkChecker {
      * @param string $url
      * @return boolean
      */
-    private function hasLinkStateForUrl($url) {        
-        return isset($this->urlToLinkStateMap[$url]);
+    private function hasLinkStateForUrl($url) {
+        return isset($this->urlToLinkStateMap[$this->getComparisonUrl($url)]);
     }
-    
-    
+
+
     /**
-     * 
-     * @param \Guzzle\Http\Message\Request $request
-     * @return \Guzzle\Http\Message\Response
+     * @param string $url
+     * @return string
      */
-    private function getHttpResponse(\Guzzle\Http\Message\Request $request) {                                
+    private function getComparisonUrl($url) {
+        if (!$this->getConfiguration()->ignoreFragmentInUrlComparison()) {
+            return $url;
+        }
+
+        $urlObject = new NormalisedUrl($url);
+        if (!$urlObject->hasFragment()) {
+            return $url;
+        }
+
+        $urlObject->setFragment(null);
+        return (string)$urlObject;
+    }
+
+
+
+    /**
+     * @param GuzzleRequest $request
+     * @return GuzzleResponse|null
+     * @throws \Guzzle\Http\Exception\CurlException
+     */
+    private function getHttpResponse(GuzzleRequest $request) {
         try {                
             return $request->send();
-        } catch (\Guzzle\Http\Exception\TooManyRedirectsException $tooManyRedirectsException) {
+        } catch (TooManyRedirectsException $tooManyRedirectsException) {
             return $this->getHttpClientHistory()->getLastResponse();
-        } catch (\Guzzle\Http\Exception\BadResponseException $badResponseException) {                
+        } catch (BadResponseException $badResponseException) {
             $this->badRequestCount++;
             
             if ($this->isBadRequestLimitReached()) {                    
@@ -320,7 +340,7 @@ class LinkChecker {
             }
             
             return $this->getHttpResponse($request);
-        } catch (\Guzzle\Common\Exception\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             if (substr_count($e->getMessage(), 'unable to parse malformed url')) {
                 $curlException = $this->getCurlMalformedUrlException();
                 throw $curlException;
@@ -344,10 +364,10 @@ class LinkChecker {
     
     /**
      * 
-     * @return \Guzzle\Http\Exception\CurlException
+     * @return CurlException
      */
     private function getCurlMalformedUrlException() {
-        $curlException = new \Guzzle\Http\Exception\CurlException();
+        $curlException = new CurlException();
         $curlException->setError(self::CURL_MALFORMED_URL_MESSAGE, self::CURL_MALFORMED_URL_CODE);
         return $curlException;
     }
@@ -360,7 +380,7 @@ class LinkChecker {
      * @return boolean
      */
     private function isUrlToBeIncluded($url) {        
-        $urlObject = new \webignition\NormalisedUrl\NormalisedUrl($url);                    
+        $urlObject = new NormalisedUrl($url);
         if (!$this->isUrlSchemeToBeIncluded($urlObject)) {
             return false;
         }
@@ -379,20 +399,20 @@ class LinkChecker {
     
     /**
      * 
-     * @param \webignition\NormalisedUrl\NormalisedUrl $url
+     * @param NormalisedUrl $url
      * @return boolean
      */
-    private function isUrlSchemeToBeIncluded(\webignition\NormalisedUrl\NormalisedUrl $url) {
+    private function isUrlSchemeToBeIncluded(NormalisedUrl $url) {
         return !in_array($url->getScheme(), $this->getConfiguration()->getSchemesToExclude());
     }
     
     
     /**
      * 
-     * @param \webignition\NormalisedUrl\NormalisedUrl $url
+     * @param NormalisedUrl $url
      * @return boolean
      */
-    private function isUrlDomainToBeIncluded(\webignition\NormalisedUrl\NormalisedUrl $url) {
+    private function isUrlDomainToBeIncluded(NormalisedUrl $url) {
         return !in_array($url->getHost(), $this->getConfiguration()->getDomainsToExclude());
     }
     
