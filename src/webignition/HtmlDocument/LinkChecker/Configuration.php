@@ -82,13 +82,6 @@ class Configuration {
      * @var boolean
      */
     private $toggleUrlEncoding = false;
-    
-    
-    /**
-     *
-     * @var array
-     */
-    private $cookies = array();
 
 
     /**
@@ -293,25 +286,6 @@ class Configuration {
      */
     public function getSchemesToExclude() {
         return $this->schemesToExclude;
-    }
-    
-    /**
-     * 
-     * @param array $cookies
-     * @return Configuration
-     */
-    public function setCookies($cookies) {
-        $this->cookies = $cookies;
-        return $this;
-    }
-    
-    
-    /**
-     * 
-     * @return array
-     */
-    public function getCookies() {
-        return $this->cookies;
     }
 
 
