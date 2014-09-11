@@ -6,7 +6,6 @@ use Guzzle\Http\Exception\BadResponseException;
 use Guzzle\Http\Exception\CurlException;
 use Guzzle\Http\Exception\TooManyRedirectsException;
 use Guzzle\Plugin\History\HistoryPlugin;
-use webignition\Cookie\UrlMatcher\UrlMatcher;
 use webignition\HtmlDocumentLinkUrlFinder\HtmlDocumentLinkUrlFinder;
 use webignition\NormalisedUrl\NormalisedUrl;
 use webignition\WebResource\WebPage\WebPage;
@@ -224,7 +223,7 @@ class LinkChecker {
         $requests = $this->buildRequestSet($url);
         
         try {
-            foreach ($requests as $request) {               
+            foreach ($requests as $request) {
                 $response = $this->getHttpResponse($request);
                 
                 if ($response->getStatusCode() === self::HTTP_STATUS_CODE_OK) {
@@ -264,31 +263,12 @@ class LinkChecker {
                     $request->setHeader('user-agent', $userAgent);                    
                     $request->setHeader('Referer', $this->webPage->getHttpResponse()->getEffectiveUrl());
                     
-                    $this->setRequestCookies($request);
-                    
                     $requests[] = $request;
                 }
             }
         }
         
         return $requests;       
-    }   
-    
-    private function setRequestCookies(GuzzleRequest $request) {
-        if (!is_null($request->getCookies())) {
-            foreach ($request->getCookies() as $name => $value) {
-                $request->removeCookie($name);
-            }
-        }
-        
-        
-        $cookieUrlMatcher = new UrlMatcher();
-        
-        foreach ($this->getConfiguration()->getCookies() as $cookie) {
-            if ($cookieUrlMatcher->isMatch($cookie, $request->getUrl())) {
-                $request->addCookie($cookie['name'], $cookie['value']);
-            }
-        } 
     }
     
     

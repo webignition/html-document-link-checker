@@ -4,6 +4,9 @@ namespace webignition\Tests\HtmlDocument\LinkChecker\CookiesTest;
 
 use webignition\WebResource\WebPage\WebPage;
 use webignition\Tests\HtmlDocument\LinkChecker\BaseTest;
+use Guzzle\Plugin\Cookie\CookiePlugin;
+use Guzzle\Plugin\Cookie\CookieJar\ArrayCookieJar;
+use Guzzle\Plugin\Cookie\Cookie;
 
 abstract class CookiesTest extends BaseTest {
     
@@ -38,10 +41,18 @@ abstract class CookiesTest extends BaseTest {
         
         $webPage = new WebPage();
         $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example16', 'http://example.com'));
+
+        $cookieJar = new ArrayCookieJar();
+
+        foreach ($this->getCookies() as $cookieData) {
+            $cookieJar->add(new Cookie($cookieData));
+        }
+
+        $cookiePlugin = new CookiePlugin($cookieJar);
+
+        $this->getHttpClient()->addSubscriber($cookiePlugin);
         
         $checker = $this->getDefaultChecker();
-        $checker->getConfiguration()->setCookies($this->getCookies());
-        
         $checker->setWebPage($webPage);
         
         $checker->getAll();
