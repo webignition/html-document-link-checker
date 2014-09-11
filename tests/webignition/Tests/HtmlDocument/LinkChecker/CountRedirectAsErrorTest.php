@@ -3,7 +3,7 @@
 namespace webignition\Tests\HtmlDocument\LinkChecker;
 
 use webignition\HtmlDocument\LinkChecker\LinkResult;
-use webignition\HtmlDocument\LinkChecker\LinkState;
+use webignition\UrlHealthChecker\LinkState;
 use webignition\WebResource\WebPage\WebPage;
 
 class CountRedirectAsErrorTest extends BaseTest {
@@ -15,7 +15,7 @@ class CountRedirectAsErrorTest extends BaseTest {
             "HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect1\r\nContent-Length: 0\r\n\r\n",
             "HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect1\r\nContent-Length: 0\r\n\r\n",
             "HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect1\r\nContent-Length: 0\r\n\r\n",
-            "HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect1\r\nContent-Length: 0\r\n\r\n"
+            "HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect1\r\nContent-Length: 0\r\n\r\n",
         ));     
         
         $webPage = new WebPage();

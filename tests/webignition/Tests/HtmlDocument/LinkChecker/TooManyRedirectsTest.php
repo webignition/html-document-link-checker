@@ -3,7 +3,7 @@
 namespace webignition\Tests\HtmlDocument\LinkChecker;
 
 use webignition\HtmlDocument\LinkChecker\LinkResult;
-use webignition\HtmlDocument\LinkChecker\LinkState;
+use webignition\UrlHealthChecker\LinkState;
 use webignition\WebResource\WebPage\WebPage;
 
 class TooManyRedirectsTest extends BaseTest {

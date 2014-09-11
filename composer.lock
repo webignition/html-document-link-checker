@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "0ea08b7f37d8af878d71a66d5b97217b",
+    "hash": "c9d3327fcda197d89b7c9fda6e1cdaa6",
     "packages": [
         {
             "name": "doctrine/collections",
@@ -413,150 +413,6 @@
             "time": "2014-04-04 13:31:41"
         },
         {
-            "name": "webignition/cookie-domain-matcher",
-            "version": "0.1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/webignition/cookie-domain-matcher.git",
-                "reference": "fceaa47ad3bb4f66a6e27d69b78e23dded5e6e84"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/webignition/cookie-domain-matcher/zipball/fceaa47ad3bb4f66a6e27d69b78e23dded5e6e84",
-                "reference": "fceaa47ad3bb4f66a6e27d69b78e23dded5e6e84",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "3.7.*",
-                "symfony/class-loader": "*"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "webignition\\Tests": "tests/",
-                    "": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Jon Cram",
-                    "email": "jon@webignition.net"
-                }
-            ],
-            "description": "Implementation of cookie domain matching specified in RFC6265",
-            "homepage": "https://github.com/webignition/cookie-domain-matcher",
-            "keywords": [
-                "cookie",
-                "domain",
-                "hostname"
-            ],
-            "time": "2014-03-14 13:26:13"
-        },
-        {
-            "name": "webignition/cookie-path-matcher",
-            "version": "0.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/webignition/cookie-path-matcher.git",
-                "reference": "f045714ca5c6c7d9603e25d2ae153db696caf52c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/webignition/cookie-path-matcher/zipball/f045714ca5c6c7d9603e25d2ae153db696caf52c",
-                "reference": "f045714ca5c6c7d9603e25d2ae153db696caf52c",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "3.7.*",
-                "symfony/class-loader": "*"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "webignition\\Tests": "tests/",
-                    "": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Jon Cram",
-                    "email": "jon@webignition.net"
-                }
-            ],
-            "description": "Implementation of cookie path matching specified in RFC6265",
-            "homepage": "https://github.com/webignition/cookie-path-matcher",
-            "keywords": [
-                "cookie",
-                "matcher",
-                "path"
-            ],
-            "time": "2014-03-14 12:33:11"
-        },
-        {
-            "name": "webignition/cookie-url-matcher",
-            "version": "0.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/webignition/cookie-url-matcher.git",
-                "reference": "87b01ccb0264e49b5e53fdd5a546c44f2edc7978"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/webignition/cookie-url-matcher/zipball/87b01ccb0264e49b5e53fdd5a546c44f2edc7978",
-                "reference": "87b01ccb0264e49b5e53fdd5a546c44f2edc7978",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.0",
-                "webignition/cookie-domain-matcher": ">=0.1.1,<1",
-                "webignition/cookie-path-matcher": ">=0.1,<1",
-                "webignition/url": ">=1.9.9,<2"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "3.7.*",
-                "symfony/class-loader": "*"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "webignition\\Tests": "tests/",
-                    "": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Jon Cram",
-                    "email": "jon@webignition.net"
-                }
-            ],
-            "description": "For cookie domain and url comparisons",
-            "homepage": "https://github.com/webignition/cookie-url-matcher",
-            "keywords": [
-                "cookie",
-                "matcher",
-                "url"
-            ],
-            "time": "2014-03-14 14:04:40"
-        },
-        {
             "name": "webignition/html-document-link-finder",
             "version": "1.0.1",
             "source": {
@@ -783,6 +639,53 @@
                 "url"
             ],
             "time": "2014-09-04 13:22:46"
+        },
+        {
+            "name": "webignition/url-health-checker",
+            "version": "0.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/webignition/url-health-checker.git",
+                "reference": "187b1a962e095f07294d59368d04c0bb8c2ad2b5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/webignition/url-health-checker/zipball/187b1a962e095f07294d59368d04c0bb8c2ad2b5",
+                "reference": "187b1a962e095f07294d59368d04c0bb8c2ad2b5",
+                "shasum": ""
+            },
+            "require": {
+                "guzzle/guzzle": ">=3.8.0,<4",
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "webignition\\Tests": "tests/",
+                    "": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jon Cram",
+                    "email": "jon@webignition.net"
+                }
+            ],
+            "description": "Check the health of a URL. Does it return 200 OK? 404 Not Found? Does in redirect indefinitely?",
+            "homepage": "https://github.com/webignition/url-health-checker",
+            "keywords": [
+                "checker",
+                "health",
+                "url"
+            ],
+            "time": "2014-09-11 10:53:07"
         },
         {
             "name": "webignition/web-page-model",

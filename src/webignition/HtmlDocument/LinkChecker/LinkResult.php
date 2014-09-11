@@ -1,6 +1,8 @@
 <?php
 namespace webignition\HtmlDocument\LinkChecker;
 
+use webignition\UrlHealthChecker\LinkState;
+
 class LinkResult {
     
     /**

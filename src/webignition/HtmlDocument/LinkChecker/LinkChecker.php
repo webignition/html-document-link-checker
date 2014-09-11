@@ -12,6 +12,8 @@ use webignition\WebResource\WebPage\WebPage;
 use Guzzle\Http\Message\Request as GuzzleRequest;
 use Guzzle\Http\Message\Response as GuzzleResponse;
 use Guzzle\Http\Url as GuzzleUrl;
+use webignition\UrlHealthChecker\UrlHealthChecker;
+use webignition\UrlHealthChecker\LinkState;
 
 class LinkChecker {
     
@@ -58,6 +60,12 @@ class LinkChecker {
      * @var Configuration
      */
     private $configuration;
+
+
+    /**
+     * @var UrlHealthChecker
+     */
+    private $urlHealthChecker = null;
     
     
     /**
@@ -151,7 +159,7 @@ class LinkChecker {
     
     /**
      * 
-     * @param \webignition\HtmlDocument\LinkChecker\LinkState $linkState
+     * @param LinkState $linkState
      * @return boolean
      */
     private function isErrored(LinkState $linkState) {        
@@ -197,7 +205,7 @@ class LinkChecker {
     /**
      * 
      * @param string $url
-     * @return \webignition\HtmlDocument\LinkChecker\LinkState
+     * @return LinkState
      */
     private function getLinkState($url) {        
         if ($this->hasLinkStateForUrl($url)) {
@@ -217,60 +225,12 @@ class LinkChecker {
     /**
      * 
      * @param string $url
-     * @return \webignition\HtmlDocument\LinkChecker\LinkState
+     * @return LinkState
      */
     private function deriveLinkState($url) {
-        $requests = $this->buildRequestSet($url);
-        
-        try {
-            foreach ($requests as $request) {
-                $response = $this->getHttpResponse($request);
-                
-                if ($response->getStatusCode() === self::HTTP_STATUS_CODE_OK) {
-                    return new LinkState(LinkState::TYPE_HTTP, $response->getStatusCode());
-                }
-            }           
-        } catch (CurlException $curlException) {
-            return new LinkState(LinkState::TYPE_CURL, $curlException->getErrorNo());
-        }
-        
-        return new LinkState(LinkState::TYPE_HTTP, $response->getStatusCode());
+        return $this->getUrlHealthChecker()->check($url);
     }
-    
-    
-    /**
-     * 
-     * @param string $url
-     * @return \Guzzle\Http\Message\Request[]
-     */
-    private function buildRequestSet($url) {        
-        $useEncodingOptions = ($this->getConfiguration()->getToggleUrlEncoding())
-            ? array(true, false)
-            : array(true);
-        
-        $requests = array();
-        
-        $userAgentSelection = $this->getConfiguration()->getUserAgentSelectionForRequest();
-        
-        foreach ($userAgentSelection as $userAgent) {
-            foreach ($this->getConfiguration()->getHttpMethodList() as $methodIndex => $method) {
-                foreach ($useEncodingOptions as $useEncoding) {
-                    $requestUrl = GuzzleUrl::factory($url);
-                    $requestUrl->getQuery()->useUrlEncoding($useEncoding);
-                    
-                    $request = clone $this->getConfiguration()->getBaseRequest();
-                    $request->setUrl($requestUrl);
-                    $request->setHeader('user-agent', $userAgent);                    
-                    $request->setHeader('Referer', $this->webPage->getHttpResponse()->getEffectiveUrl());
-                    
-                    $requests[] = $request;
-                }
-            }
-        }
-        
-        return $requests;       
-    }
-    
+
     
     /**
      * 
@@ -302,55 +262,55 @@ class LinkChecker {
 
 
 
-    /**
-     * @param GuzzleRequest $request
-     * @return GuzzleResponse|null
-     * @throws \Guzzle\Http\Exception\CurlException
-     */
-    private function getHttpResponse(GuzzleRequest $request) {
-        try {                
-            return $request->send();
-        } catch (TooManyRedirectsException $tooManyRedirectsException) {
-            return $this->getHttpClientHistory()->getLastResponse();
-        } catch (BadResponseException $badResponseException) {
-            $this->badRequestCount++;
-            
-            if ($this->isBadRequestLimitReached()) {                    
-                return $badResponseException->getResponse();
-            }
-            
-            return $this->getHttpResponse($request);
-        } catch (InvalidArgumentException $e) {
-            if (substr_count($e->getMessage(), 'unable to parse malformed url')) {
-                $curlException = $this->getCurlMalformedUrlException();
-                throw $curlException;
-            }
-        }         
-    }
+//    /**
+//     * @param GuzzleRequest $request
+//     * @return GuzzleResponse|null
+//     * @throws \Guzzle\Http\Exception\CurlException
+//     */
+//    private function getHttpResponse(GuzzleRequest $request) {
+//        try {
+//            return $request->send();
+//        } catch (TooManyRedirectsException $tooManyRedirectsException) {
+//            return $this->getHttpClientHistory()->getLastResponse();
+//        } catch (BadResponseException $badResponseException) {
+//            $this->badRequestCount++;
+//
+//            if ($this->isBadRequestLimitReached()) {
+//                return $badResponseException->getResponse();
+//            }
+//
+//            return $this->getHttpResponse($request);
+//        } catch (InvalidArgumentException $e) {
+//            if (substr_count($e->getMessage(), 'unable to parse malformed url')) {
+//                $curlException = $this->getCurlMalformedUrlException();
+//                throw $curlException;
+//            }
+//        }
+//    }
     
     
-    /**
-     * 
-     * @return boolean
-     */
-    private function isBadRequestLimitReached() {
-        if ($this->getConfiguration()->getRetryOnBadResponse() === false) {
-            return true;
-        }
-        
-        return $this->badRequestCount > self::BAD_REQUEST_LIMIT - 1;        
-    }
+//    /**
+//     *
+//     * @return boolean
+//     */
+//    private function isBadRequestLimitReached() {
+//        if ($this->getConfiguration()->getRetryOnBadResponse() === false) {
+//            return true;
+//        }
+//
+//        return $this->badRequestCount > self::BAD_REQUEST_LIMIT - 1;
+//    }
     
     
-    /**
-     * 
-     * @return CurlException
-     */
-    private function getCurlMalformedUrlException() {
-        $curlException = new CurlException();
-        $curlException->setError(self::CURL_MALFORMED_URL_MESSAGE, self::CURL_MALFORMED_URL_CODE);
-        return $curlException;
-    }
+//    /**
+//     *
+//     * @return CurlException
+//     */
+//    private function getCurlMalformedUrlException() {
+//        $curlException = new CurlException();
+//        $curlException->setError(self::CURL_MALFORMED_URL_MESSAGE, self::CURL_MALFORMED_URL_CODE);
+//        return $curlException;
+//    }
 
     
     
@@ -394,6 +354,18 @@ class LinkChecker {
      */
     private function isUrlDomainToBeIncluded(NormalisedUrl $url) {
         return !in_array($url->getHost(), $this->getConfiguration()->getDomainsToExclude());
+    }
+
+
+    /**
+     * @return UrlHealthChecker
+     */
+    public function getUrlHealthChecker() {
+        if (is_null($this->urlHealthChecker)) {
+            $this->urlHealthChecker = new UrlHealthChecker();
+        }
+
+        return $this->urlHealthChecker;
     }
     
 }

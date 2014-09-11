@@ -65,11 +65,10 @@ abstract class BaseTest extends \PHPUnit_Framework_TestCase {
         
         return null;     
     }     
-    
-    
+
+
     /**
-     * 
-     * @param array $httpMessages
+     * @param array $items
      */
     protected function loadHttpClientFixtures($items) {
         $plugin = new \Guzzle\Plugin\Mock\MockPlugin();
@@ -93,9 +92,9 @@ abstract class BaseTest extends \PHPUnit_Framework_TestCase {
      */
     protected function getDefaultChecker() {
         $checker = new LinkChecker();
-        $checker->getConfiguration()->setBaseRequest($this->getHttpClient()->get());
-        $checker->getConfiguration()->disableRetryOnBadResponse();
-        $checker->getConfiguration()->setHttpMethodList(array('GET'));
+        $checker->getUrlHealthChecker()->getConfiguration()->setBaseRequest($this->getHttpClient()->get());
+        $checker->getUrlHealthChecker()->getConfiguration()->disableRetryOnBadResponse();
+        $checker->getUrlHealthChecker()->getConfiguration()->setHttpMethodList(array('GET'));
         
         return $checker;
     }

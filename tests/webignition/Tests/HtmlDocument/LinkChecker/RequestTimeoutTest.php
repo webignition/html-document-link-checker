@@ -4,7 +4,7 @@ namespace webignition\Tests\HtmlDocument\LinkChecker;
 
 use webignition\WebResource\WebPage\WebPage;
 use webignition\HtmlDocument\LinkChecker\LinkResult;
-use webignition\HtmlDocument\LinkChecker\LinkState;
+use webignition\UrlHealthChecker\LinkState;
 
 class RequestTimeoutTest extends BaseTest {
     
@@ -20,7 +20,7 @@ class RequestTimeoutTest extends BaseTest {
             'connect_timeout' => 0.001            
         )); 
         
-        $checker->getConfiguration()->setBaseRequest($baseRequest);
+        $checker->getUrlHealthChecker()->getConfiguration()->setBaseRequest($baseRequest);
         
         $this->assertEquals(array(
             new LinkResult(

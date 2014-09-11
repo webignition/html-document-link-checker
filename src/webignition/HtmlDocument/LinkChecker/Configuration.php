@@ -20,23 +20,7 @@ class Configuration {
     
     const DEFAULT_REQUEST_TIMEOUT = 10;    
     const DEFAULT_REQUEST_CONNECT_TIMEOUT = 10;    
-    
-    /**
-     *
-     * @var array
-     */
-    private $userAgents = array();
-    
-    
-    /**
-     *
-     * @var array
-     */
-    private $httpMethodList = array(
-        self::HTTP_METHOD_HEAD,
-        self::HTTP_METHOD_GET
-    );
-    
+
     
     /**
      *
@@ -47,14 +31,7 @@ class Configuration {
         self::URL_SCHEME_ABOUT,
         self::URL_SCEME_JAVASCRIPT
     );
-    
-    
-    /**
-     *
-     * @var \Guzzle\Http\Message\Request
-     */
-    private $baseRequest = null;
-    
+
     
     /**
      *
@@ -68,151 +45,12 @@ class Configuration {
      * @var array
      */
     private $domainsToExclude = array();
-    
-    
-    /**
-     *
-     * @var boolean
-     */
-    private $retryOnBadResponse = true;
-    
-    
-    /**
-     *
-     * @var boolean
-     */
-    private $toggleUrlEncoding = false;
 
 
     /**
      * @var bool
      */
     private $ignoreFragmentInUrlComparison = false;
-    
-    
-    /**
-     * 
-     * @param \Guzzle\Http\Message\Request $request
-     * @return \webignition\HtmlDocument\LinkChecker\Configuration
-     */
-    public function setBaseRequest(\Guzzle\Http\Message\Request $request) {
-        $this->baseRequest = $request;
-        return $this;
-    }
-    
-    
-    
-    /**
-     * 
-     * @return \Guzzle\Http\Message\Request $request
-     */
-    public function getBaseRequest() {
-        if (is_null($this->baseRequest)) {
-            $client = new \Guzzle\Http\Client;            
-            $client->addSubscriber(new \Guzzle\Plugin\History\HistoryPlugin());            
-            $this->baseRequest = $client->get();
-        }
-        
-        return $this->baseRequest;
-    }     
-    
-    
-    /**
-     * 
-     * @return \webignition\HtmlDocument\LinkChecker\Configuration
-     */
-    public function enableToggleUrlEncoding() {
-        $this->toggleUrlEncoding = true;
-        return $this;
-    }
-    
-    
-    /**
-     * 
-     * @return \webignition\HtmlDocument\LinkChecker\Configuration
-     */
-    public function disableToggleUrlEncoding() {
-        $this->toggleUrlEncoding = false;
-        return $this;
-    }    
-    
-    
-    /**
-     * 
-     * @return boolean
-     */
-    public function getToggleUrlEncoding() {
-        return $this->toggleUrlEncoding;
-    }
-    
-    
-    /**
-     * 
-     * @return \webignition\HtmlDocument\LinkChecker\Configuration
-     */
-    public function enableRetryOnBadResponse() {
-        $this->retryOnBadResponse = true;
-        return $this;
-    }
-    
-    
-    /**
-     * 
-     * @return \webignition\HtmlDocument\LinkChecker\Configuration
-     */
-    public function disableRetryOnBadResponse() {
-        $this->retryOnBadResponse = false;
-        return $this;
-    }    
-    
-    
-    /**
-     * 
-     * @return boolean
-     */
-    public function getRetryOnBadResponse() {
-        return $this->retryOnBadResponse;
-    }
-    
-    
-    /**
-     * 
-     * @param string[] $httpMethodList
-     * @return \webignition\HtmlDocument\LinkChecker\Configuration
-     */
-    public function setHttpMethodList($httpMethodList) {
-        $this->httpMethodList = $httpMethodList;
-        return $this;
-    }
-    
-    
-    /**
-     * 
-     * @return string[]
-     */
-    public function getHttpMethodList() {
-        return $this->httpMethodList;
-    }
-    
-    
-    /**
-     * 
-     * @param string[] $userAgents
-     * @return \webignition\HtmlDocument\LinkChecker\Configuration
-     */
-    public function setUserAgents($userAgents) {
-        $this->userAgents = $userAgents;
-        return $this;
-    }
-    
-    
-    /**
-     * 
-     * @return string[]
-     */
-    public function getUserAgents() {
-        return $this->userAgents;
-    }
     
     
     /**
@@ -253,20 +91,6 @@ class Configuration {
     public function getDomainsToExclude() {
         return $this->domainsToExclude;
     }
-    
-    
-    /**
-     * 
-     * @return array
-     */
-    public function getUserAgentSelectionForRequest() {
-        if (count($this->userAgents)) {
-            return $this->userAgents;
-        }
-        
-        return $this->getBaseRequest()->getClient()->get()->getHeader('User-Agent')->toArray();     
-    }
-    
     
     
     /**

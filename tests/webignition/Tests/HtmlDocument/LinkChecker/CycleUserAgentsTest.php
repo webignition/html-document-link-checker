@@ -17,7 +17,7 @@ class CycleUserAgentsTest extends BaseTest {
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
-        $checker->getConfiguration()->setUserAgents(array('foo', 'bar'));
+        $checker->getUrlHealthChecker()->getConfiguration()->setUserAgents(array('foo', 'bar'));
         
         $this->assertEquals(0, count($checker->getErrored()));
     }  
