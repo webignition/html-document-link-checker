@@ -121,7 +121,7 @@ class LinkChecker {
 
             $linkFinder = new HtmlDocumentLinkUrlFinder();
             $linkFinder->getConfiguration()->setSourceUrl($this->webPage->getHttpResponse()->getEffectiveUrl());
-            $linkFinder->getConfiguration()->setSourceContent($this->webPage->getHttpResponse()->getBody(true));
+            $linkFinder->getConfiguration()->setSource($this->webPage);
 
             if (!$linkFinder->hasUrls()) {
                 return $this->linkCheckResults;          
