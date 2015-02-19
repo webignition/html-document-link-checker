@@ -3,7 +3,8 @@ php:
   - 5.4
   - 5.5
   - 5.6
-  - hhvm    
+  - hhvm
+  - hhvm-nightly
   
 before_script:
   - wget http://getcomposer.org/composer.phar
@@ -12,3 +13,4 @@ before_script:
 matrix:
   allow_failures:
     - php: hhvm
+    - php: hhvm-nightly
