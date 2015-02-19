@@ -5,7 +5,10 @@ class Configuration {
     
     const URL_SCHEME_MAILTO = 'mailto';
     const URL_SCHEME_ABOUT = 'about';
-    const URL_SCEME_JAVASCRIPT = 'javascript';
+    const URL_SCHEME_JAVASCRIPT = 'javascript';
+    const URL_SCHEME_FTP = 'ftp';
+    const URL_SCHEME_TEL = 'tel';
+
     const HTTP_STATUS_CODE_OK = 200;
     const HTTP_STATUS_CODE_METHOD_NOT_ALLOWED = 405;
     const HTTP_STATUS_CODE_NOT_IMPLEMENTED = 501;
@@ -29,7 +32,9 @@ class Configuration {
     private $schemesToExclude = array(
         self::URL_SCHEME_MAILTO,
         self::URL_SCHEME_ABOUT,
-        self::URL_SCEME_JAVASCRIPT
+        self::URL_SCHEME_JAVASCRIPT,
+        self::URL_SCHEME_FTP,
+        self::URL_SCHEME_TEL
     );
 
     

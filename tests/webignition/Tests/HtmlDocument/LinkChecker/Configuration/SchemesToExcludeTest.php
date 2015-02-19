@@ -10,7 +10,9 @@ class SchemesToExcludeTest extends ConfigurationTest {
         $this->assertEquals(array(
             'mailto',
             'about',
-            'javascript'
+            'javascript',
+            'ftp',
+            'tel'
         ), $this->getConfiguration()->getSchemesToExclude());
     }
     
