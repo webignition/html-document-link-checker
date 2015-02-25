@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "ded7f00721f007070e7de7995362874f",
+    "hash": "aa0f914a524b927c9d3119031beb33cd",
     "packages": [
         {
             "name": "doctrine/collections",
@@ -467,16 +467,16 @@
         },
         {
             "name": "webignition/guzzle-curl-exception",
-            "version": "0.1.1",
+            "version": "0.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webignition/guzzle-curl-exception.git",
-                "reference": "d309fc651f227ef06eefcf967f04b64665063363"
+                "reference": "53c4b9759a3525078e4bd95b1f23f651aae59f40"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webignition/guzzle-curl-exception/zipball/d309fc651f227ef06eefcf967f04b64665063363",
-                "reference": "d309fc651f227ef06eefcf967f04b64665063363",
+                "url": "https://api.github.com/repos/webignition/guzzle-curl-exception/zipball/53c4b9759a3525078e4bd95b1f23f651aae59f40",
+                "reference": "53c4b9759a3525078e4bd95b1f23f651aae59f40",
                 "shasum": ""
             },
             "require": {
@@ -510,7 +510,7 @@
                 "curl",
                 "exception"
             ],
-            "time": "2015-02-25 14:48:07"
+            "time": "2015-02-25 21:54:38"
         },
         {
             "name": "webignition/html-document-link-finder",
@@ -741,22 +741,22 @@
         },
         {
             "name": "webignition/url-health-checker",
-            "version": "0.2",
+            "version": "0.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webignition/url-health-checker.git",
-                "reference": "419b8e5c5ef65aca43a141b9def08c8f7cb978a0"
+                "reference": "837e3cfcf8722cf89e7dd5e1e86a01f5d42ba96c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webignition/url-health-checker/zipball/419b8e5c5ef65aca43a141b9def08c8f7cb978a0",
-                "reference": "419b8e5c5ef65aca43a141b9def08c8f7cb978a0",
+                "url": "https://api.github.com/repos/webignition/url-health-checker/zipball/837e3cfcf8722cf89e7dd5e1e86a01f5d42ba96c",
+                "reference": "837e3cfcf8722cf89e7dd5e1e86a01f5d42ba96c",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": ">=5.2.0,<5.3",
                 "php": ">=5.4.0",
-                "webignition/guzzle-curl-exception": ">=0.1.1,<1"
+                "webignition/guzzle-curl-exception": ">=0.1.2,<1"
             },
             "require-dev": {
                 "phpunit/phpunit": "~4.0"
@@ -785,7 +785,7 @@
                 "health",
                 "url"
             ],
-            "time": "2015-02-25 20:49:16"
+            "time": "2015-02-25 21:45:50"
         },
         {
             "name": "webignition/web-page-model",

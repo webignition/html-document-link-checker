@@ -4,9 +4,10 @@ namespace webignition\Tests\HtmlDocument\LinkChecker\CookiesTest;
 
 use webignition\WebResource\WebPage\WebPage;
 use webignition\Tests\HtmlDocument\LinkChecker\BaseTest;
-use Guzzle\Plugin\Cookie\CookiePlugin;
-use Guzzle\Plugin\Cookie\CookieJar\ArrayCookieJar;
-use Guzzle\Plugin\Cookie\Cookie;
+use GuzzleHttp\Subscriber\Cookie as HttpCookieSubscriber;
+use GuzzleHttp\Cookie\CookieJar;
+use GuzzleHttp\Cookie\SetCookie;
+use GuzzleHttp\Message\RequestInterface as HttpRequest;
 
 abstract class CookiesTest extends BaseTest {
     
@@ -20,14 +21,14 @@ abstract class CookiesTest extends BaseTest {
     
     /**
      * 
-     * @return \Guzzle\Http\Message\RequestInterface[]
+     * @return HttpRequest[]
      */    
     abstract protected function getExpectedRequestsOnWhichCookiesShouldBeSet();
     
     
     /**
      * 
-     * @return \Guzzle\Http\Message\RequestInterface[]
+     * @return HttpRequest[]
      */    
     abstract protected function getExpectedRequestsOnWhichCookiesShouldNotBeSet();    
     
@@ -42,15 +43,13 @@ abstract class CookiesTest extends BaseTest {
         $webPage = new WebPage();
         $webPage->setHttpResponse($this->getHttpFixtureFromHtmlDocument('example16', 'http://example.com'));
 
-        $cookieJar = new ArrayCookieJar();
+        $cookieJar = new CookieJar();
 
         foreach ($this->getCookies() as $cookieData) {
-            $cookieJar->add(new Cookie($cookieData));
+            $cookieJar->setCookie(new SetCookie($cookieData));
         }
 
-        $cookiePlugin = new CookiePlugin($cookieJar);
-
-        $this->getHttpClient()->addSubscriber($cookiePlugin);
+        $this->getHttpClient()->getEmitter()->attach(new HttpCookieSubscriber($cookieJar));
         
         $checker = $this->getDefaultChecker();
         $checker->setWebPage($webPage);
@@ -61,14 +60,14 @@ abstract class CookiesTest extends BaseTest {
     
     public function testCookiesAreSetOnExpectedRequests() {
         foreach ($this->getExpectedRequestsOnWhichCookiesShouldBeSet() as $request) {            
-            $this->assertEquals($this->getExpectedCookieValues(), $request->getCookies());
+            $this->assertEquals($this->getExpectedCookieValues(), $this->getRequestCookieValues($request));
         }
     }
     
     
     public function testCookiesAreNotSetOnExpectedRequests() {        
         foreach ($this->getExpectedRequestsOnWhichCookiesShouldNotBeSet() as $request) {            
-            $this->assertEquals(array(), $request->getCookies());
+            $this->assertEquals(array(), $this->getRequestCookieValues($request));
         }
     }    
     
@@ -81,10 +80,28 @@ abstract class CookiesTest extends BaseTest {
         $nameValueArray = array();
         
         foreach ($this->getCookies() as $cookie) {
-            $nameValueArray[$cookie['name']] = $cookie['value'];
+            $nameValueArray[$cookie['Name']] = $cookie['Value'];
         }
         
         return $nameValueArray;
+    }
+
+
+    private function getRequestCookieValues(HttpRequest $request) {
+        if (!$request->hasHeader('Cookie')) {
+            return [];
+        }
+
+        $cookieStrings = explode(';', $request->getHeader('Cookie'));
+        $values = [];
+
+        foreach ($cookieStrings as $cookieString) {
+            $cookieString = trim($cookieString);
+            $currentValues = explode('=', $cookieString);
+            $values[$currentValues[0]] = $currentValues[1];
+        }
+
+        return $values;
     }
     
 }

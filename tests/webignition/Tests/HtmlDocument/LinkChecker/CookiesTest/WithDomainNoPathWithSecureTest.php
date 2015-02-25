@@ -2,22 +2,24 @@
 
 namespace webignition\Tests\HtmlDocument\LinkChecker\CookiesTest;
 
+use GuzzleHttp\Message\RequestInterface as HttpRequest;
+
 class WithDomainNoPathWithSecureTest extends CookiesTest { 
     
     protected function getCookies() {
         return array(
             array(
-                'domain' => '.example.com',
-                'secure' => true,
-                'name' => 'name1',
-                'value' => 'value1'
+                'Domain' => '.example.com',
+                'Secure' => true,
+                'Name' => 'name1',
+                'Value' => 'value1'
             )                       
         );         
     }
     
     /**
-     * 
-     * @return \Guzzle\Http\Message\RequestInterface[]
+     *
+     * @return HttpRequest[]
      */
     protected function getExpectedRequestsOnWhichCookiesShouldBeSet() {
         return $this->getHttpHistory()->getLastRequest();
@@ -25,15 +27,15 @@ class WithDomainNoPathWithSecureTest extends CookiesTest {
     
     
     /**
-     * 
-     * @return \Guzzle\Http\Message\RequestInterface[]
+     *
+     * @return HttpRequest[]
      */
     protected function getExpectedRequestsOnWhichCookiesShouldNotBeSet() {
         $requests = array();
         
-        foreach ($this->getHttpHistory()->getAll() as $httpTransaction) {
-            if ($httpTransaction['request']->getUrl() != 'https://example.com/') {
-                $requests[] = $httpTransaction['request'];
+        foreach ($this->getHttpHistory()->getRequests() as $request) {
+            if ($request->getUrl() != 'https://example.com/') {
+                $requests[] = $request;
             }
         }
         

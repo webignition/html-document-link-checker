@@ -5,6 +5,8 @@ namespace webignition\Tests\HtmlDocument\LinkChecker;
 use webignition\HtmlDocument\LinkChecker\LinkResult;
 use webignition\UrlHealthChecker\LinkState;
 use webignition\WebResource\WebPage\WebPage;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Message\Request;
 
 class GetLinkStatesTest extends BaseTest {
     
@@ -51,14 +53,20 @@ class GetLinkStatesTest extends BaseTest {
     
     
     public function testWithVariedCurlCodes() {
-        $curl6Exception = new \Guzzle\Http\Exception\CurlException();
-        $curl6Exception->setError('Couldn\'t resolve host. The given remote host was not resolved.', 6);        
+        $curl6Exception = new ConnectException(
+            'cURL error 6: Couldn\'t resolve host. The given remote host was not resolved.',
+            new Request('GET', 'http://example.com/')
+        );
         
-        $curl28Exception = new \Guzzle\Http\Exception\CurlException();
-        $curl28Exception->setError('Operation timeout. The specified time-out period was reached according to the conditions.', 28);        
+        $curl28Exception = new ConnectException(
+            'cURL error 28: Operation timeout. The specified time-out period was reached according to the conditions.',
+            new Request('GET', 'http://example.com/')
+        );
         
-        $curl55Exception = new \Guzzle\Http\Exception\CurlException();
-        $curl55Exception->setError('Failed sending network data.', 55);
+        $curl55Exception = new ConnectException(
+            'cURL error 55: Failed sending network data.',
+            new Request('GET', 'http://example.com/')
+        );
         
         $this->loadHttpClientFixtures(array(
             $curl6Exception,
@@ -87,19 +95,16 @@ class GetLinkStatesTest extends BaseTest {
     
     
     public function testWithMixedHttpStatusCodesAndCurlCodes() {
-        $curl6Exception = new \Guzzle\Http\Exception\CurlException();
-        $curl6Exception->setError('Couldn\'t resolve host. The given remote host was not resolved.', 6);        
-        
-        $curl28Exception = new \Guzzle\Http\Exception\CurlException();
-        $curl28Exception->setError('Operation timeout. The specified time-out period was reached according to the conditions.', 28);        
-        
-        $curl55Exception = new \Guzzle\Http\Exception\CurlException();
-        $curl55Exception->setError('Failed sending network data.', 55);
-        
         $this->loadHttpClientFixtures(array(
-            $curl6Exception,
+            new ConnectException(
+                'cURL error 6: Couldn\'t resolve host. The given remote host was not resolved.',
+                new Request('GET', 'http://example.com/')
+            ),
             'HTTP/1.1 200 Ok',
-            $curl28Exception,
+            new ConnectException(
+                'cURL error 28: Operation timeout. The specified time-out period was reached according to the conditions.',
+                new Request('GET', 'http://example.com/')
+            ),
             'HTTP/1.1 500 Internal Server Error',     
             'HTTP/1.1 400 Bad Request',            
             'HTTP/1.1 200 Ok',

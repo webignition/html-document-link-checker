@@ -363,6 +363,7 @@ class LinkChecker {
     public function getUrlHealthChecker() {
         if (is_null($this->urlHealthChecker)) {
             $this->urlHealthChecker = new UrlHealthChecker();
+            $this->urlHealthChecker->getConfiguration()->setHttpClient($this->getConfiguration()->getHttpClient());
         }
 
         return $this->urlHealthChecker;

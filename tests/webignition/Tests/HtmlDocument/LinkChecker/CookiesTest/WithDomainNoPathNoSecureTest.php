@@ -2,28 +2,30 @@
 
 namespace webignition\Tests\HtmlDocument\LinkChecker\CookiesTest;
 
+use GuzzleHttp\Message\RequestInterface as HttpRequest;
+
 class WithDomainNoPathNoSecureTest extends CookiesTest { 
     
     protected function getCookies() {
         return array(
             array(
-                'domain' => '.example.com',
-                'name' => 'name1',
-                'value' => 'value1'
+                'Domain' => '.example.com',
+                'Name' => 'name1',
+                'Value' => 'value1'
             )                       
         );         
     }
     
     /**
-     * 
-     * @return \Guzzle\Http\Message\RequestInterface[]
+     *
+     * @return HttpRequest[]
      */
     protected function getExpectedRequestsOnWhichCookiesShouldBeSet() {
         $requests = array();
         
-        foreach ($this->getHttpHistory()->getAll() as $httpTransaction) {            
-            if ($httpTransaction['request']->getUrl() != 'http://anotherexample.com/') {
-                $requests[] = $httpTransaction['request'];
+        foreach ($this->getHttpHistory()->getRequests() as $request) {
+            if ($request->getUrl() != 'http://anotherexample.com/') {
+                $requests[] = $request;
             }
         }
         
@@ -32,15 +34,15 @@ class WithDomainNoPathNoSecureTest extends CookiesTest {
     
     
     /**
-     * 
-     * @return \Guzzle\Http\Message\RequestInterface[]
+     *
+     * @return HttpRequest[]
      */
     protected function getExpectedRequestsOnWhichCookiesShouldNotBeSet() {
          $requests = array();
         
-        foreach ($this->getHttpHistory()->getAll() as $httpTransaction) {
-            if ($httpTransaction['request']->getUrl() == 'http://anotherexample.com/') {
-                $requests[] = $httpTransaction['request'];
+        foreach ($this->getHttpHistory()->getRequests() as $request) {
+            if ($request->getUrl() == 'http://anotherexample.com/') {
+                $requests[] = $request;
             }
         }
         

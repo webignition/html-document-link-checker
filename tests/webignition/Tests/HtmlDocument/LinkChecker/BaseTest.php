@@ -3,12 +3,17 @@
 namespace webignition\Tests\HtmlDocument\LinkChecker;
 
 use webignition\HtmlDocument\LinkChecker\LinkChecker;
+use GuzzleHttp\Client as HttpClient;
+use GuzzleHttp\Message\ResponseInterface as HttpResponse;
+use GuzzleHttp\Subscriber\History as HttpHistorySubscriber;
+use GuzzleHttp\Subscriber\Mock as HttpMockSubscriber;
+use GuzzleHttp\Message\MessageFactory as HttpMessageFactory;
 
 abstract class BaseTest extends \PHPUnit_Framework_TestCase {
     
     /**
      *
-     * @var \Guzzle\Http\Client
+     * @var HttpClient
      */
     private $httpClient;
     
@@ -26,10 +31,10 @@ abstract class BaseTest extends \PHPUnit_Framework_TestCase {
      * 
      * @param string $name
      * @param string $effectiveUrl
-     * @return \Guzzle\Http\Message\Response
+     * @return HttpResponse
      */
     protected function getHttpFixtureFromHtmlDocument($name, $effectiveUrl) {
-        $response = \Guzzle\Http\Message\Response::fromMessage("HTTP/1.0 200 OK\nContent-Type:text/html\n\n" . $this->getHtmlDocumentFixture($name));
+        $response = $this->getHttpResponseFromMessage("HTTP/1.0 200 OK\nContent-Type:text/html\n\n" . $this->getHtmlDocumentFixture($name));
         $response->setEffectiveUrl($effectiveUrl);
         
         return $response;      
@@ -38,12 +43,12 @@ abstract class BaseTest extends \PHPUnit_Framework_TestCase {
     
     /**
      * 
-     * @return \Guzzle\Http\Client
+     * @return HttpClient
      */
     protected function getHttpClient() {
         if (is_null($this->httpClient)) {
-            $this->httpClient = new \Guzzle\Http\Client();
-            $this->httpClient->addSubscriber(new \Guzzle\Plugin\History\HistoryPlugin());
+            $this->httpClient = new HttpClient();
+            $this->httpClient->getEmitter()->attach(new HttpHistorySubscriber());
         }
         
         return $this->httpClient;
@@ -52,13 +57,13 @@ abstract class BaseTest extends \PHPUnit_Framework_TestCase {
     
     /**
      * 
-     * @return \Guzzle\Plugin\History\HistoryPlugin|null
+     * @return HttpHistorySubscriber
      */
     protected function getHttpHistory() {
-        $listenerCollections = $this->getHttpClient()->getEventDispatcher()->getListeners('request.sent');
-        
+        $listenerCollections = $this->getHttpClient()->getEmitter()->listeners('complete');
+
         foreach ($listenerCollections as $listener) {
-            if ($listener[0] instanceof \Guzzle\Plugin\History\HistoryPlugin) {
+            if ($listener[0] instanceof HttpHistorySubscriber) {
                 return $listener[0];
             }
         }
@@ -71,17 +76,11 @@ abstract class BaseTest extends \PHPUnit_Framework_TestCase {
      * @param array $items
      */
     protected function loadHttpClientFixtures($items) {
-        $plugin = new \Guzzle\Plugin\Mock\MockPlugin();
-        
-        foreach ($items as $item) {
-            if ($item instanceof \Exception) {
-                $plugin->addException($item);
-            } elseif (is_string($item)) {
-                $plugin->addResponse(\Guzzle\Http\Message\Response::fromMessage($item));
-            }
-        }
-        
-        $this->getHttpClient()->addSubscriber($plugin);
+        $this->getHttpClient()->getEmitter()->attach(
+            new HttpMockSubscriber(
+                $items
+            )
+        );
     }
     
     
@@ -92,11 +91,22 @@ abstract class BaseTest extends \PHPUnit_Framework_TestCase {
      */
     protected function getDefaultChecker() {
         $checker = new LinkChecker();
-        $checker->getUrlHealthChecker()->getConfiguration()->setBaseRequest($this->getHttpClient()->get());
+        $checker->getConfiguration()->setHttpClient($this->getHttpClient());
+        $checker->getUrlHealthChecker()->getConfiguration()->setBaseRequest($this->getHttpClient()->createRequest('GET'));
         $checker->getUrlHealthChecker()->getConfiguration()->disableRetryOnBadResponse();
         $checker->getUrlHealthChecker()->getConfiguration()->setHttpMethodList(array('GET'));
         
         return $checker;
+    }
+
+
+    /**
+     * @param $message
+     * @return HttpResponse
+     */
+    protected function getHttpResponseFromMessage($message) {
+        $factory = new HttpMessageFactory();
+        return $factory->fromMessage($message);
     }
     
 }

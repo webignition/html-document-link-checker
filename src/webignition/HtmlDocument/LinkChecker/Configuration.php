@@ -1,6 +1,8 @@
 <?php
 namespace webignition\HtmlDocument\LinkChecker;
 
+use GuzzleHttp\Client as HttpClient;
+
 class Configuration {           
     
     const URL_SCHEME_MAILTO = 'mailto';
@@ -56,6 +58,12 @@ class Configuration {
      * @var bool
      */
     private $ignoreFragmentInUrlComparison = false;
+
+
+    /**
+     * @var HttpClient
+     */
+    private $httpClient;
     
     
     /**
@@ -141,6 +149,28 @@ class Configuration {
      */
     public function ignoreFragmentInUrlComparison() {
         return $this->ignoreFragmentInUrlComparison;
+    }
+
+
+    /**
+     * @param HttpClient $httpClient
+     * @return $this
+     */
+    public function setHttpClient(HttpClient $httpClient) {
+        $this->httpClient = $httpClient;
+        return $this;
+    }
+
+
+    /**
+     * @return HttpClient
+     */
+    public function getHttpClient() {
+        if (is_null($this->httpClient)) {
+            $this->httpClient = new HttpClient();
+        }
+
+        return $this->httpClient;
     }
     
 }
