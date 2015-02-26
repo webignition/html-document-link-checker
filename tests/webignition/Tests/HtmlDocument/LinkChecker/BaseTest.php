@@ -92,7 +92,6 @@ abstract class BaseTest extends \PHPUnit_Framework_TestCase {
     protected function getDefaultChecker() {
         $checker = new LinkChecker();
         $checker->getConfiguration()->setHttpClient($this->getHttpClient());
-        $checker->getUrlHealthChecker()->getConfiguration()->setBaseRequest($this->getHttpClient()->createRequest('GET'));
         $checker->getUrlHealthChecker()->getConfiguration()->disableRetryOnBadResponse();
         $checker->getUrlHealthChecker()->getConfiguration()->setHttpMethodList(array('GET'));
         
