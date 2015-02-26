@@ -1,17 +1,9 @@
 <?php
 namespace webignition\HtmlDocument\LinkChecker;
 
-use Guzzle\Common\Exception\InvalidArgumentException;
-use Guzzle\Http\Exception\BadResponseException;
-use Guzzle\Http\Exception\CurlException;
-use Guzzle\Http\Exception\TooManyRedirectsException;
-use Guzzle\Plugin\History\HistoryPlugin;
 use webignition\HtmlDocumentLinkUrlFinder\HtmlDocumentLinkUrlFinder;
 use webignition\NormalisedUrl\NormalisedUrl;
 use webignition\WebResource\WebPage\WebPage;
-use Guzzle\Http\Message\Request as GuzzleRequest;
-use Guzzle\Http\Message\Response as GuzzleResponse;
-use Guzzle\Http\Url as GuzzleUrl;
 use webignition\UrlHealthChecker\UrlHealthChecker;
 use webignition\UrlHealthChecker\LinkState;
 
@@ -50,13 +42,6 @@ class LinkChecker {
     
     /**
      *
-     * @var array
-     */
-    private $badRequestCount = 0;
-    
-    
-    /**
-     *
      * @var Configuration
      */
     private $configuration;
@@ -78,22 +63,6 @@ class LinkChecker {
         }
         
         return $this->configuration;
-    }
-    
-    
-    /**
-     * 
-     * @return HistoryPlugin
-     */
-    private function getHttpClientHistory() {
-        $requestSentListeners = $this->getConfiguration()->getBaseRequest()->getEventDispatcher()->getListeners('request.sent');
-        foreach ($requestSentListeners as $requestSentListener) {
-            if ($requestSentListener[0] instanceof HistoryPlugin) {
-                return $requestSentListener[0];
-            }
-        }
-        
-        return null;
     }
     
     
@@ -260,59 +229,6 @@ class LinkChecker {
         return (string)$urlObject;
     }
 
-
-
-//    /**
-//     * @param GuzzleRequest $request
-//     * @return GuzzleResponse|null
-//     * @throws \Guzzle\Http\Exception\CurlException
-//     */
-//    private function getHttpResponse(GuzzleRequest $request) {
-//        try {
-//            return $request->send();
-//        } catch (TooManyRedirectsException $tooManyRedirectsException) {
-//            return $this->getHttpClientHistory()->getLastResponse();
-//        } catch (BadResponseException $badResponseException) {
-//            $this->badRequestCount++;
-//
-//            if ($this->isBadRequestLimitReached()) {
-//                return $badResponseException->getResponse();
-//            }
-//
-//            return $this->getHttpResponse($request);
-//        } catch (InvalidArgumentException $e) {
-//            if (substr_count($e->getMessage(), 'unable to parse malformed url')) {
-//                $curlException = $this->getCurlMalformedUrlException();
-//                throw $curlException;
-//            }
-//        }
-//    }
-    
-    
-//    /**
-//     *
-//     * @return boolean
-//     */
-//    private function isBadRequestLimitReached() {
-//        if ($this->getConfiguration()->getRetryOnBadResponse() === false) {
-//            return true;
-//        }
-//
-//        return $this->badRequestCount > self::BAD_REQUEST_LIMIT - 1;
-//    }
-    
-    
-//    /**
-//     *
-//     * @return CurlException
-//     */
-//    private function getCurlMalformedUrlException() {
-//        $curlException = new CurlException();
-//        $curlException->setError(self::CURL_MALFORMED_URL_MESSAGE, self::CURL_MALFORMED_URL_CODE);
-//        return $curlException;
-//    }
-
-    
     
     /**
      * 
