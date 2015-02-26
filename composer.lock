@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "aa0f914a524b927c9d3119031beb33cd",
+    "hash": "7f653ee7aaffb1e57813ec5c5506657a",
     "packages": [
         {
             "name": "doctrine/collections",
@@ -741,16 +741,16 @@
         },
         {
             "name": "webignition/url-health-checker",
-            "version": "0.2.1",
+            "version": "0.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webignition/url-health-checker.git",
-                "reference": "837e3cfcf8722cf89e7dd5e1e86a01f5d42ba96c"
+                "reference": "d90c5b83a7c7dafa70674850f2df473bc54f5843"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webignition/url-health-checker/zipball/837e3cfcf8722cf89e7dd5e1e86a01f5d42ba96c",
-                "reference": "837e3cfcf8722cf89e7dd5e1e86a01f5d42ba96c",
+                "url": "https://api.github.com/repos/webignition/url-health-checker/zipball/d90c5b83a7c7dafa70674850f2df473bc54f5843",
+                "reference": "d90c5b83a7c7dafa70674850f2df473bc54f5843",
                 "shasum": ""
             },
             "require": {
@@ -785,7 +785,7 @@
                 "health",
                 "url"
             ],
-            "time": "2015-02-25 21:45:50"
+            "time": "2015-02-26 13:23:46"
         },
         {
             "name": "webignition/web-page-model",
