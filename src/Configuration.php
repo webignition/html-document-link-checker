@@ -3,8 +3,8 @@ namespace webignition\HtmlDocument\LinkChecker;
 
 use GuzzleHttp\Client as HttpClient;
 
-class Configuration {           
-    
+class Configuration
+{
     const URL_SCHEME_MAILTO = 'mailto';
     const URL_SCHEME_ABOUT = 'about';
     const URL_SCHEME_JAVASCRIPT = 'javascript';
@@ -14,22 +14,20 @@ class Configuration {
     const HTTP_STATUS_CODE_OK = 200;
     const HTTP_STATUS_CODE_METHOD_NOT_ALLOWED = 405;
     const HTTP_STATUS_CODE_NOT_IMPLEMENTED = 501;
-    
+
     const HTTP_METHOD_HEAD = 'HEAD';
     const HTTP_METHOD_GET = 'GET';
-    
-    const CURL_MALFORMED_URL_CODE = 3;
-    const CURL_MALFORMED_URL_MESSAGE = 'The URL was not properly formatted.';   
-    
-    const BAD_REQUEST_LIMIT = 3;
-    
-    const DEFAULT_REQUEST_TIMEOUT = 10;    
-    const DEFAULT_REQUEST_CONNECT_TIMEOUT = 10;    
 
-    
+    const CURL_MALFORMED_URL_CODE = 3;
+    const CURL_MALFORMED_URL_MESSAGE = 'The URL was not properly formatted.';
+
+    const BAD_REQUEST_LIMIT = 3;
+
+    const DEFAULT_REQUEST_TIMEOUT = 10;
+    const DEFAULT_REQUEST_CONNECT_TIMEOUT = 10;
+
     /**
-     *
-     * @var array
+     * @var string[]
      */
     private $schemesToExclude = array(
         self::URL_SCHEME_MAILTO,
@@ -39,138 +37,136 @@ class Configuration {
         self::URL_SCHEME_TEL
     );
 
-    
     /**
-     *
      * @var array
      */
-    private $urlsToExclude = array();
-    
-    
-    /**
-     *
-     * @var array
-     */
-    private $domainsToExclude = array();
+    private $urlsToExclude = [];
 
+    /**
+     * @var array
+     */
+    private $domainsToExclude = [];
 
     /**
      * @var bool
      */
     private $ignoreFragmentInUrlComparison = false;
 
-
     /**
      * @var HttpClient
      */
     private $httpClient;
-    
-    
+
     /**
-     * 
      * @param string[] $urlsToExclude
-     * @return \webignition\HtmlDocument\LinkChecker\Configuration
+     *
+     * @return self
      */
-    public function setUrlsToExclude($urlsToExclude) {
+    public function setUrlsToExclude($urlsToExclude)
+    {
         $this->urlsToExclude = $urlsToExclude;
+
         return $this;
     }
-    
-    
+
     /**
-     * 
      * @return string[]
      */
-    public function getUrlsToExclude() {
+    public function getUrlsToExclude()
+    {
         return $this->urlsToExclude;
     }
-    
-    
+
     /**
-     * 
      * @param string[] $domainsToExclude
-     * @return \webignition\HtmlDocument\LinkChecker\Configuration
+     *
+     * @return self
      */
-    public function setDomainsToExclude($domainsToExclude) {
+    public function setDomainsToExclude($domainsToExclude)
+    {
         $this->domainsToExclude = $domainsToExclude;
+
         return $this;
     }
-    
-    
+
     /**
-     * 
      * @return string[]
      */
-    public function getDomainsToExclude() {
+    public function getDomainsToExclude()
+    {
         return $this->domainsToExclude;
     }
-    
-    
+
     /**
-     * 
      * @param string[] $schemes
-     * @return \webignition\HtmlDocument\LinkChecker\Configuration
+     *
+     * @return self
      */
-    public function setSchemesToExclude($schemes) {
+    public function setSchemesToExclude($schemes)
+    {
         $this->schemesToExclude = $schemes;
+
         return $this;
     }
-    
-    
+
     /**
-     * 
      * @return string[]
      */
-    public function getSchemesToExclude() {
+    public function getSchemesToExclude()
+    {
         return $this->schemesToExclude;
     }
 
-
     /**
-     * @return Configuration
+     * @return self
      */
-    public function enableIgnoreFragmentInUrlComparison() {
+    public function enableIgnoreFragmentInUrlComparison()
+    {
         $this->ignoreFragmentInUrlComparison = true;
+
         return $this;
     }
-
 
     /**
-     * @return Configuration
+     * @return self
      */
-    public function disableIgnoreFragmentInUrlComparison() {
+    public function disableIgnoreFragmentInUrlComparison()
+    {
         $this->ignoreFragmentInUrlComparison = false;
+
         return $this;
     }
-
 
     /**
      * @return bool
      */
-    public function ignoreFragmentInUrlComparison() {
+    public function ignoreFragmentInUrlComparison()
+    {
         return $this->ignoreFragmentInUrlComparison;
     }
 
 
     /**
      * @param HttpClient $httpClient
-     * @return $this
+     *
+     * @return self
      */
-    public function setHttpClient(HttpClient $httpClient) {
+    public function setHttpClient(HttpClient $httpClient)
+    {
         $this->httpClient = $httpClient;
+
         return $this;
     }
-
 
     /**
      * @return HttpClient
      */
-    public function getHttpClient() {
+    public function getHttpClient()
+    {
         if (is_null($this->httpClient)) {
             $this->httpClient = new HttpClient();
         }
 
         return $this->httpClient;
     }
-    
 }
