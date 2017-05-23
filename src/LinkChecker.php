@@ -7,83 +7,71 @@ use webignition\WebResource\WebPage\WebPage;
 use webignition\UrlHealthChecker\UrlHealthChecker;
 use webignition\UrlHealthChecker\LinkState;
 
-class LinkChecker {
-    
+class LinkChecker
+{
     const HTTP_STATUS_CODE_OK = 200;
     const HTTP_STATUS_CODE_METHOD_NOT_ALLOWED = 405;
     const HTTP_STATUS_CODE_NOT_IMPLEMENTED = 501;
-    
+
     const CURL_MALFORMED_URL_CODE = 3;
-    const CURL_MALFORMED_URL_MESSAGE = 'The URL was not properly formatted.';   
-    
+    const CURL_MALFORMED_URL_MESSAGE = 'The URL was not properly formatted.';
+
     const BAD_REQUEST_LIMIT = 3;
-    
-    
+
     /**
-     *
      * @var WebPage
      */
     private $webPage = null;
-    
-    
+
     /**
-     *
-     * @var array
+     * @var LinkResult[]
      */
     private $linkCheckResults = null;
-    
-    
+
     /**
-     *
      * @var array
      */
     private $urlToLinkStateMap = array();
-    
-    
+
     /**
-     *
      * @var Configuration
      */
     private $configuration;
-
 
     /**
      * @var UrlHealthChecker
      */
     private $urlHealthChecker = null;
-    
-    
+
     /**
-     * 
      * @return Configuration
      */
-    public function getConfiguration() {
+    public function getConfiguration()
+    {
         if (is_null($this->configuration)) {
             $this->configuration = new Configuration();
         }
-        
+
         return $this->configuration;
     }
-    
-    
+
     /**
-     * 
      * @param WebPage $webPage
      */
-    public function setWebPage(WebPage $webPage) {
+    public function setWebPage(WebPage $webPage)
+    {
         $this->webPage = $webPage;
-        $this->linkCheckResults = null;        
+        $this->linkCheckResults = null;
     }
-    
-    
+
     /**
-     * 
-     * @return array
+     * @return LinkResult[]
      */
-    public function getAll() {
+    public function getAll()
+    {
         if (is_null($this->linkCheckResults)) {
-            $this->linkCheckResults = array();            
-            
+            $this->linkCheckResults = array();
+
             if (is_null($this->webPage)) {
                 return $this->linkCheckResults;
             }
@@ -93,27 +81,30 @@ class LinkChecker {
             $linkFinder->getConfiguration()->setSource($this->webPage);
 
             if (!$linkFinder->hasUrls()) {
-                return $this->linkCheckResults;          
+                return $this->linkCheckResults;
             }
 
             foreach ($linkFinder->getAll() as $link) {
                 $link['url'] = rawurldecode($link['url']);
 
                 if ($this->isUrlToBeIncluded($link['url'])) {
-                    $this->linkCheckResults[] = new LinkResult($link['url'], $link['element'], $this->getLinkState($link['url']));
+                    $this->linkCheckResults[] = new LinkResult(
+                        $link['url'],
+                        $link['element'],
+                        $this->getLinkState($link['url'])
+                    );
                 }
             }
         }
-        
+
         return $this->linkCheckResults;
     }
-    
-    
+
     /**
-     * 
      * @return array
      */
-    public function getErrored() {
+    public function getErrored()
+    {
         $links = array();
         foreach ($this->getAll() as $linkCheckResult) {
             /* @var $linkCheckResult LinkResult */
@@ -121,34 +112,34 @@ class LinkChecker {
                 $links[] = $linkCheckResult;
             }
         }
-        
+
         return $links;
     }
-    
-    
+
     /**
-     * 
+     *
      * @param LinkState $linkState
+     *
      * @return boolean
      */
-    private function isErrored(LinkState $linkState) {        
+    private function isErrored(LinkState $linkState)
+    {
         if ($linkState->getType() == LinkState::TYPE_CURL) {
             return true;
         }
-        
+
         if ($linkState->getType() == LinkState::TYPE_HTTP && $this->isHttpErrorStatusCode($linkState->getState())) {
             return true;
         }
-        
+
         return false;
     }
-    
-    
+
     /**
-     * 
      * @return array
      */
-    public function getWorking() {
+    public function getWorking()
+    {
         $links = array();
         foreach ($this->getAll() as $linkCheckResult) {
             /* @var $linkCheckResult LinkResult */
@@ -156,27 +147,28 @@ class LinkChecker {
                 $links[] = $linkCheckResult;
             }
         }
-        
-        return $links;       
+
+        return $links;
     }
 
-    
     /**
-     * 
      * @param int $statusCode
+     *
      * @return boolean
      */
-    private function isHttpErrorStatusCode($statusCode) {        
+    private function isHttpErrorStatusCode($statusCode)
+    {
         return in_array(substr((string)$statusCode, 0, 1), array('3', '4', '5'));
     }
-    
-    
+
+
     /**
-     * 
      * @param string $url
+     *
      * @return LinkState
      */
-    private function getLinkState($url) {        
+    private function getLinkState($url)
+    {
         if ($this->hasLinkStateForUrl($url)) {
             return $this->urlToLinkStateMap[$this->getComparisonUrl($url)];
         }
@@ -189,33 +181,35 @@ class LinkChecker {
 
         return $linkState;
     }
-    
-    
+
     /**
-     * 
      * @param string $url
+     *
      * @return LinkState
      */
-    private function deriveLinkState($url) {
+    private function deriveLinkState($url)
+    {
         return $this->getUrlHealthChecker()->check($url);
     }
 
-    
+
     /**
-     * 
      * @param string $url
+     *
      * @return boolean
      */
-    private function hasLinkStateForUrl($url) {
+    private function hasLinkStateForUrl($url)
+    {
         return isset($this->urlToLinkStateMap[$this->getComparisonUrl($url)]);
     }
 
-
     /**
      * @param string $url
+     *
      * @return string
      */
-    private function getComparisonUrl($url) {
+    private function getComparisonUrl($url)
+    {
         if (!$this->getConfiguration()->ignoreFragmentInUrlComparison()) {
             return $url;
         }
@@ -226,57 +220,59 @@ class LinkChecker {
         }
 
         $urlObject->setFragment(null);
+
         return (string)$urlObject;
     }
 
-    
+
     /**
-     * 
      * @param string $url
+     *
      * @return boolean
      */
-    private function isUrlToBeIncluded($url) {        
+    private function isUrlToBeIncluded($url)
+    {
         $urlObject = new NormalisedUrl($url);
         if (!$this->isUrlSchemeToBeIncluded($urlObject)) {
             return false;
         }
-        
+
         if (in_array($url, $this->getConfiguration()->getUrlsToExclude())) {
             return false;
         }
-        
+
         if (!$this->isUrlDomainToBeIncluded($urlObject)) {
             return false;
         }
-        
+
         return true;
     }
-    
-    
+
     /**
-     * 
      * @param NormalisedUrl $url
+     *
      * @return boolean
      */
-    private function isUrlSchemeToBeIncluded(NormalisedUrl $url) {
+    private function isUrlSchemeToBeIncluded(NormalisedUrl $url)
+    {
         return !in_array($url->getScheme(), $this->getConfiguration()->getSchemesToExclude());
     }
-    
-    
+
     /**
-     * 
      * @param NormalisedUrl $url
+     *
      * @return boolean
      */
-    private function isUrlDomainToBeIncluded(NormalisedUrl $url) {
+    private function isUrlDomainToBeIncluded(NormalisedUrl $url)
+    {
         return !in_array($url->getHost(), $this->getConfiguration()->getDomainsToExclude());
     }
-
 
     /**
      * @return UrlHealthChecker
      */
-    public function getUrlHealthChecker() {
+    public function getUrlHealthChecker()
+    {
         if (is_null($this->urlHealthChecker)) {
             $this->urlHealthChecker = new UrlHealthChecker();
             $this->urlHealthChecker->getConfiguration()->setHttpClient($this->getConfiguration()->getHttpClient());
@@ -284,5 +280,4 @@ class LinkChecker {
 
         return $this->urlHealthChecker;
     }
-    
 }
