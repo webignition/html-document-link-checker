@@ -20,15 +20,6 @@ use webignition\WebResource\WebPage\WebPage;
 class LinkCheckerTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * getAll
-     * getConfiguration
-     * getErrored
-     * getUrlHealthChecker
-     * getWorking
-     * setWebPage
-     */
-
-    /**
      * @dataProvider getAllGetErroredGetWorkinglDataProvider
      *
      * @param string $responseUrl
