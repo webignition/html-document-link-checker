@@ -5,7 +5,6 @@ namespace webignition\Tests\HtmlDocument\LinkChecker;
 use GuzzleHttp\Message\ResponseInterface;
 use Mockery\MockInterface;
 use PHPUnit_Framework_TestCase;
-
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Message\Request;
@@ -19,15 +18,6 @@ use webignition\WebResource\WebPage\WebPage;
 
 class LinkCheckerTest extends PHPUnit_Framework_TestCase
 {
-    /**
-     * getAll
-     * getConfiguration
-     * getErrored
-     * getUrlHealthChecker
-     * getWorking
-     * setWebPage
-     */
-
     /**
      * @dataProvider getAllGetErroredGetWorkinglDataProvider
      *
@@ -63,9 +53,6 @@ class LinkCheckerTest extends PHPUnit_Framework_TestCase
             }, $linkChecker);
         }
 
-//        var_dump($linkChecker->getAll(), $linkChecker->getErrored(), $linkChecker->getWorking());
-//        var_dump($linkChecker->getAll());
-//
         $this->assertEquals($expectedGetAllResults, $linkChecker->getAll());
         $this->assertEquals($expectedGetErroredResults, $linkChecker->getErrored());
         $this->assertEquals($expectedGetWorkingResults, $linkChecker->getWorking());
@@ -356,7 +343,7 @@ class LinkCheckerTest extends PHPUnit_Framework_TestCase
                         new Request('GET', 'http://example.com/')
                     ),
                     'HTTP/1.1 200',
-                    'HTTP/1.1 200',
+                    'HTTP/1.1 999',
                 ],
                 'expectedGetAllResults' => [
                     $this->createLinkResult(
@@ -393,7 +380,7 @@ class LinkCheckerTest extends PHPUnit_Framework_TestCase
                         'http://example.com/images/twitter.png',
                         '<img src="/images/twitter.png">',
                         LinkState::TYPE_HTTP,
-                        200
+                        999
                     ),
                 ],
                 'expectedGetErroredResults' => [
@@ -421,17 +408,17 @@ class LinkCheckerTest extends PHPUnit_Framework_TestCase
                         LinkState::TYPE_CURL,
                         28
                     ),
+                    $this->createLinkResult(
+                        'http://example.com/images/twitter.png',
+                        '<img src="/images/twitter.png">',
+                        LinkState::TYPE_HTTP,
+                        999
+                    ),
                 ],
                 'expectedGetWorkingResults' => [
                     $this->createLinkResult(
                         'http://twitter.com/example',
                         '<a href="http://twitter.com/example"><img src="/images/twitter.png"></a>',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                    $this->createLinkResult(
-                        'http://example.com/images/twitter.png',
-                        '<img src="/images/twitter.png">',
                         LinkState::TYPE_HTTP,
                         200
                     ),

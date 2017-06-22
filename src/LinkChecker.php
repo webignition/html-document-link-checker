@@ -128,7 +128,7 @@ class LinkChecker
             return true;
         }
 
-        if ($linkState->getType() == LinkState::TYPE_HTTP && $this->isHttpErrorStatusCode($linkState->getState())) {
+        if ($this->isHttpErrorStatusCode($linkState->getState())) {
             return true;
         }
 
@@ -158,7 +158,15 @@ class LinkChecker
      */
     private function isHttpErrorStatusCode($statusCode)
     {
-        return in_array(substr((string)$statusCode, 0, 1), array('3', '4', '5'));
+        if (in_array(substr((string)$statusCode, 0, 1), array('3', '4', '5'))) {
+            return true;
+        }
+
+        if ($statusCode == 999) {
+            return true;
+        }
+
+        return false;
     }
 
 
