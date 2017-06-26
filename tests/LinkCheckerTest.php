@@ -13,13 +13,14 @@ use GuzzleHttp\Subscriber\History as HttpHistorySubscriber;
 use GuzzleHttp\Subscriber\Mock as HttpMockSubscriber;
 use webignition\HtmlDocument\LinkChecker\LinkChecker;
 use webignition\HtmlDocument\LinkChecker\LinkResult;
+use webignition\UrlHealthChecker\Configuration as UrlHeatlCheckerConfiguration;
 use webignition\UrlHealthChecker\LinkState;
 use webignition\WebResource\WebPage\WebPage;
 
 class LinkCheckerTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * @dataProvider getAllGetErroredGetWorkinglDataProvider
+     * @dataProvider getAllGetErroredGetWorkingDataProvider
      *
      * @param string $responseUrl
      * @param string $responseBody
@@ -61,7 +62,7 @@ class LinkCheckerTest extends PHPUnit_Framework_TestCase
     /**
      * @return array
      */
-    public function getAllGetErroredGetWorkinglDataProvider()
+    public function getAllGetErroredGetWorkingDataProvider()
     {
         return [
             'no web page' => [
@@ -171,8 +172,12 @@ class LinkCheckerTest extends PHPUnit_Framework_TestCase
                 ],
                 'expectedGetWorkingResults' => [],
                 'linkCheckerModifierFunction' => function (LinkChecker $linkChecker) {
-                    $linkChecker->getUrlHealthChecker()->getConfiguration()->disableRetryOnBadResponse();
-                    $linkChecker->getUrlHealthChecker()->getConfiguration()->setHttpMethodList(array('GET'));
+                    $linkChecker->getUrlHealthChecker()->setConfiguration(new UrlHeatlCheckerConfiguration([
+                        UrlHeatlCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
+                        UrlHeatlCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
+                        UrlHeatlCheckerConfiguration::CONFIG_KEY_HTTP_CLIENT =>
+                            $linkChecker->getConfiguration()->getHttpClient(),
+                    ]));
                 },
             ],
             'do not reuse failed link state' => [
@@ -213,8 +218,12 @@ class LinkCheckerTest extends PHPUnit_Framework_TestCase
                     ),
                 ],
                 'linkCheckerModifierFunction' => function (LinkChecker $linkChecker) {
-                    $linkChecker->getUrlHealthChecker()->getConfiguration()->disableRetryOnBadResponse();
-                    $linkChecker->getUrlHealthChecker()->getConfiguration()->setHttpMethodList(array('GET'));
+                    $linkChecker->getUrlHealthChecker()->setConfiguration(new UrlHeatlCheckerConfiguration([
+                        UrlHeatlCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
+                        UrlHeatlCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
+                        UrlHeatlCheckerConfiguration::CONFIG_KEY_HTTP_CLIENT =>
+                            $linkChecker->getConfiguration()->getHttpClient(),
+                    ]));
                 },
             ],
             'exclude domains' => [
@@ -424,8 +433,12 @@ class LinkCheckerTest extends PHPUnit_Framework_TestCase
                     ),
                 ],
                 'linkCheckerModifierFunction' => function (LinkChecker $linkChecker) {
-                    $linkChecker->getUrlHealthChecker()->getConfiguration()->disableRetryOnBadResponse();
-                    $linkChecker->getUrlHealthChecker()->getConfiguration()->setHttpMethodList(array('GET'));
+                    $linkChecker->getUrlHealthChecker()->setConfiguration(new UrlHeatlCheckerConfiguration([
+                        UrlHeatlCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
+                        UrlHeatlCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
+                        UrlHeatlCheckerConfiguration::CONFIG_KEY_HTTP_CLIENT =>
+                            $linkChecker->getConfiguration()->getHttpClient(),
+                    ]));
                 },
             ],
         ];
