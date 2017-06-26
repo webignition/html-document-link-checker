@@ -3,6 +3,7 @@ namespace webignition\HtmlDocument\LinkChecker;
 
 use webignition\HtmlDocumentLinkUrlFinder\HtmlDocumentLinkUrlFinder;
 use webignition\NormalisedUrl\NormalisedUrl;
+use webignition\UrlHealthChecker\Configuration as UrlHealthCheckerConfiguration;
 use webignition\WebResource\WebPage\WebPage;
 use webignition\UrlHealthChecker\UrlHealthChecker;
 use webignition\UrlHealthChecker\LinkState;
@@ -283,7 +284,9 @@ class LinkChecker
     {
         if (is_null($this->urlHealthChecker)) {
             $this->urlHealthChecker = new UrlHealthChecker();
-            $this->urlHealthChecker->getConfiguration()->setHttpClient($this->getConfiguration()->getHttpClient());
+            $this->urlHealthChecker->setConfiguration(new UrlHealthCheckerConfiguration([
+                UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_CLIENT => $this->getConfiguration()->getHttpClient(),
+            ]));
         }
 
         return $this->urlHealthChecker;

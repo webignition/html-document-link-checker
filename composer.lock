@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "62036a34150f39dd6f4a781242d88551",
+    "content-hash": "6679f4660f0f6f072279fc6bc9fb3177",
     "packages": [
         {
             "name": "doctrine/collections",
@@ -861,31 +861,33 @@
         },
         {
             "name": "webignition/url-health-checker",
-            "version": "0.5",
+            "version": "0.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webignition/url-health-checker.git",
-                "reference": "d0e702249415c35f9e3d172ef873804d059200ba"
+                "reference": "8fca2dddb1c0af71af3133b83954890aa30068d5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webignition/url-health-checker/zipball/d0e702249415c35f9e3d172ef873804d059200ba",
-                "reference": "d0e702249415c35f9e3d172ef873804d059200ba",
+                "url": "https://api.github.com/repos/webignition/url-health-checker/zipball/8fca2dddb1c0af71af3133b83954890aa30068d5",
+                "reference": "8fca2dddb1c0af71af3133b83954890aa30068d5",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": ">=5.2.0,<5.3",
-                "php": ">=5.4.0",
+                "php": ">=5.5.0",
                 "webignition/guzzle-curl-exception": ">=0.1.2,<1"
             },
             "require-dev": {
-                "phpunit/phpunit": "~4.0"
+                "mockery/mockery": "~0.9",
+                "phpunit/phpunit": "~4.0",
+                "squizlabs/php_codesniffer": "3.*"
             },
             "type": "library",
             "autoload": {
-                "psr-0": {
-                    "webignition\\Tests": "tests/",
-                    "": "src/"
+                "psr-4": {
+                    "webignition\\UrlHealthChecker\\": "src/",
+                    "webignition\\Tests\\UrlHealthChecker\\": "tests/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -905,7 +907,7 @@
                 "health",
                 "url"
             ],
-            "time": "2017-06-22T17:02:07+00:00"
+            "time": "2017-06-23T12:52:14+00:00"
         },
         {
             "name": "webignition/web-page-model",
