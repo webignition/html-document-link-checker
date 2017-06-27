@@ -1,6 +1,7 @@
 <?php
 namespace webignition\HtmlDocument\LinkChecker;
 
+use webignition\HtmlDocumentLinkUrlFinder\Configuration as LinkFinderConfiguration;
 use webignition\HtmlDocumentLinkUrlFinder\HtmlDocumentLinkUrlFinder;
 use webignition\NormalisedUrl\NormalisedUrl;
 use webignition\UrlHealthChecker\Configuration as UrlHealthCheckerConfiguration;
@@ -77,9 +78,13 @@ class LinkChecker
                 return $this->linkCheckResults;
             }
 
+            $linkFinderConfiguration = new LinkFinderConfiguration([
+                LinkFinderConfiguration::CONFIG_KEY_SOURCE => $this->webPage,
+                LinkFinderConfiguration::CONFIG_KEY_SOURCE_URL => $this->webPage->getHttpResponse()->getEffectiveUrl(),
+            ]);
+
             $linkFinder = new HtmlDocumentLinkUrlFinder();
-            $linkFinder->getConfiguration()->setSourceUrl($this->webPage->getHttpResponse()->getEffectiveUrl());
-            $linkFinder->getConfiguration()->setSource($this->webPage);
+            $linkFinder->setConfiguration($linkFinderConfiguration);
 
             if (!$linkFinder->hasUrls()) {
                 return $this->linkCheckResults;

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "6679f4660f0f6f072279fc6bc9fb3177",
+    "content-hash": "f45f63baed352208a05508f0c97f2cc4",
     "packages": [
         {
             "name": "doctrine/collections",
@@ -622,16 +622,16 @@
         },
         {
             "name": "webignition/html-document-link-finder",
-            "version": "1.3",
+            "version": "1.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webignition/html-document-link-url-finder.git",
-                "reference": "298f5179dc9721534cf9f0b5e590f2fec8514428"
+                "reference": "ef9dce199d02b1101a7b15bb102d178dddba7527"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webignition/html-document-link-url-finder/zipball/298f5179dc9721534cf9f0b5e590f2fec8514428",
-                "reference": "298f5179dc9721534cf9f0b5e590f2fec8514428",
+                "url": "https://api.github.com/repos/webignition/html-document-link-url-finder/zipball/ef9dce199d02b1101a7b15bb102d178dddba7527",
+                "reference": "ef9dce199d02b1101a7b15bb102d178dddba7527",
                 "shasum": ""
             },
             "require": {
@@ -641,13 +641,15 @@
                 "webignition/web-page-model": ">=1.1,<2"
             },
             "require-dev": {
-                "phpunit/phpunit": "~4.0"
+                "mockery/mockery": "~0.9",
+                "phpunit/phpunit": "~4.0",
+                "squizlabs/php_codesniffer": "3.*"
             },
             "type": "library",
             "autoload": {
-                "psr-0": {
-                    "webignition\\Tests": "tests/",
-                    "": "src/"
+                "psr-4": {
+                    "webignition\\HtmlDocumentLinkUrlFinder\\": "src/",
+                    "webignition\\Tests\\HtmlDocumentLinkUrlFinder\\": "tests/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -668,7 +670,7 @@
                 "linkifier",
                 "validation"
             ],
-            "time": "2015-02-23T21:36:49+00:00"
+            "time": "2017-06-27T06:23:14+00:00"
         },
         {
             "name": "webignition/internet-media-type",
