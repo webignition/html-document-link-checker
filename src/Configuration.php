@@ -1,10 +1,14 @@
 <?php
-namespace webignition\HtmlDocument\LinkChecker;
 
-use GuzzleHttp\Client as HttpClient;
+namespace webignition\HtmlDocument\LinkChecker;
 
 class Configuration
 {
+    const KEY_SCHEMES_TO_EXCLUDE = 'schemes-to-exclude';
+    const KEY_URLS_TO_EXCLUDE = 'urls-to-exclude';
+    const KEY_DOMAINS_TO_EXCLUDE = 'domains-to-exclude';
+    const KEY_IGNORE_FRAGMENT_IN_URL_COMPARISON = 'ignore-fragment-in-url-comparison';
+
     const URL_SCHEME_MAILTO = 'mailto';
     const URL_SCHEME_ABOUT = 'about';
     const URL_SCHEME_JAVASCRIPT = 'javascript';
@@ -29,13 +33,13 @@ class Configuration
     /**
      * @var string[]
      */
-    private $schemesToExclude = array(
+    private $schemesToExclude = [
         self::URL_SCHEME_MAILTO,
         self::URL_SCHEME_ABOUT,
         self::URL_SCHEME_JAVASCRIPT,
         self::URL_SCHEME_FTP,
         self::URL_SCHEME_TEL
-    );
+    ];
 
     /**
      * @var array
@@ -53,20 +57,25 @@ class Configuration
     private $ignoreFragmentInUrlComparison = false;
 
     /**
-     * @var HttpClient
+     * @param array $configurationValues
      */
-    private $httpClient;
-
-    /**
-     * @param string[] $urlsToExclude
-     *
-     * @return self
-     */
-    public function setUrlsToExclude($urlsToExclude)
+    public function __construct(array $configurationValues = [])
     {
-        $this->urlsToExclude = $urlsToExclude;
+        if (array_key_exists(self::KEY_SCHEMES_TO_EXCLUDE, $configurationValues)) {
+            $this->schemesToExclude = $configurationValues[self::KEY_SCHEMES_TO_EXCLUDE];
+        }
 
-        return $this;
+        if (array_key_exists(self::KEY_URLS_TO_EXCLUDE, $configurationValues)) {
+            $this->urlsToExclude = $configurationValues[self::KEY_URLS_TO_EXCLUDE];
+        }
+
+        if (array_key_exists(self::KEY_DOMAINS_TO_EXCLUDE, $configurationValues)) {
+            $this->domainsToExclude = $configurationValues[self::KEY_DOMAINS_TO_EXCLUDE];
+        }
+
+        if (array_key_exists(self::KEY_IGNORE_FRAGMENT_IN_URL_COMPARISON, $configurationValues)) {
+            $this->ignoreFragmentInUrlComparison = $configurationValues[self::KEY_IGNORE_FRAGMENT_IN_URL_COMPARISON];
+        }
     }
 
     /**
@@ -78,35 +87,11 @@ class Configuration
     }
 
     /**
-     * @param string[] $domainsToExclude
-     *
-     * @return self
-     */
-    public function setDomainsToExclude($domainsToExclude)
-    {
-        $this->domainsToExclude = $domainsToExclude;
-
-        return $this;
-    }
-
-    /**
      * @return string[]
      */
     public function getDomainsToExclude()
     {
         return $this->domainsToExclude;
-    }
-
-    /**
-     * @param string[] $schemes
-     *
-     * @return self
-     */
-    public function setSchemesToExclude($schemes)
-    {
-        $this->schemesToExclude = $schemes;
-
-        return $this;
     }
 
     /**
@@ -118,55 +103,10 @@ class Configuration
     }
 
     /**
-     * @return self
-     */
-    public function enableIgnoreFragmentInUrlComparison()
-    {
-        $this->ignoreFragmentInUrlComparison = true;
-
-        return $this;
-    }
-
-    /**
-     * @return self
-     */
-    public function disableIgnoreFragmentInUrlComparison()
-    {
-        $this->ignoreFragmentInUrlComparison = false;
-
-        return $this;
-    }
-
-    /**
      * @return bool
      */
-    public function ignoreFragmentInUrlComparison()
+    public function getIgnoreFragmentInUrlComparison()
     {
         return $this->ignoreFragmentInUrlComparison;
-    }
-
-
-    /**
-     * @param HttpClient $httpClient
-     *
-     * @return self
-     */
-    public function setHttpClient(HttpClient $httpClient)
-    {
-        $this->httpClient = $httpClient;
-
-        return $this;
-    }
-
-    /**
-     * @return HttpClient
-     */
-    public function getHttpClient()
-    {
-        if (is_null($this->httpClient)) {
-            $this->httpClient = new HttpClient();
-        }
-
-        return $this->httpClient;
     }
 }
