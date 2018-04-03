@@ -2,10 +2,9 @@
 
 namespace webignition\Tests\HtmlDocument\LinkChecker;
 
-use PHPUnit_Framework_TestCase;
 use webignition\HtmlDocument\LinkChecker\Configuration;
 
-class ConfigurationTest extends PHPUnit_Framework_TestCase
+class ConfigurationTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @dataProvider createDataProvider

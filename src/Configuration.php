@@ -2,12 +2,15 @@
 
 namespace webignition\HtmlDocument\LinkChecker;
 
+use webignition\UrlHealthChecker\Configuration as UrlHealthCheckerConfiguration;
+
 class Configuration
 {
     const KEY_SCHEMES_TO_EXCLUDE = 'schemes-to-exclude';
     const KEY_URLS_TO_EXCLUDE = 'urls-to-exclude';
     const KEY_DOMAINS_TO_EXCLUDE = 'domains-to-exclude';
     const KEY_IGNORE_FRAGMENT_IN_URL_COMPARISON = 'ignore-fragment-in-url-comparison';
+    const KEY_URL_HEALTH_CHECKER_CONFIGURATION = 'url-health-checker-configuration';
 
     const URL_SCHEME_MAILTO = 'mailto';
     const URL_SCHEME_ABOUT = 'about';
@@ -57,6 +60,11 @@ class Configuration
     private $ignoreFragmentInUrlComparison = false;
 
     /**
+     * @var UrlHealthCheckerConfiguration
+     */
+    private $urlHealthCheckerConfiguration;
+
+    /**
      * @param array $configurationValues
      */
     public function __construct(array $configurationValues = [])
@@ -76,6 +84,12 @@ class Configuration
         if (array_key_exists(self::KEY_IGNORE_FRAGMENT_IN_URL_COMPARISON, $configurationValues)) {
             $this->ignoreFragmentInUrlComparison = $configurationValues[self::KEY_IGNORE_FRAGMENT_IN_URL_COMPARISON];
         }
+
+        if (!array_key_exists(self::KEY_URL_HEALTH_CHECKER_CONFIGURATION, $configurationValues)) {
+            $configurationValues[self::KEY_URL_HEALTH_CHECKER_CONFIGURATION] = new UrlHealthCheckerConfiguration();
+        }
+
+        $this->urlHealthCheckerConfiguration = $configurationValues[self::KEY_URL_HEALTH_CHECKER_CONFIGURATION];
     }
 
     /**
@@ -108,5 +122,13 @@ class Configuration
     public function getIgnoreFragmentInUrlComparison()
     {
         return $this->ignoreFragmentInUrlComparison;
+    }
+
+    /**
+     * @return UrlHealthCheckerConfiguration
+     */
+    public function getUrlHealthCheckerConfiguration()
+    {
+        return $this->urlHealthCheckerConfiguration;
     }
 }

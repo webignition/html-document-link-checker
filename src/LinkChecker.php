@@ -1,10 +1,13 @@
 <?php
+
 namespace webignition\HtmlDocument\LinkChecker;
 
+use GuzzleHttp\Client as HttpClient;
+use GuzzleHttp\Exception\GuzzleException;
+use QueryPath\Exception as QueryPathException;
 use webignition\HtmlDocumentLinkUrlFinder\Configuration as LinkFinderConfiguration;
 use webignition\HtmlDocumentLinkUrlFinder\HtmlDocumentLinkUrlFinder;
 use webignition\NormalisedUrl\NormalisedUrl;
-use webignition\UrlHealthChecker\Configuration as UrlHealthCheckerConfiguration;
 use webignition\WebResource\WebPage\WebPage;
 use webignition\UrlHealthChecker\UrlHealthChecker;
 use webignition\UrlHealthChecker\LinkState;
@@ -33,7 +36,7 @@ class LinkChecker
     /**
      * @var array
      */
-    private $urlToLinkStateMap = array();
+    private $urlToLinkStateMap = [];
 
     /**
      * @var Configuration
@@ -46,15 +49,21 @@ class LinkChecker
     private $urlHealthChecker = null;
 
     /**
-     * @return Configuration
+     * @var HttpClient
      */
-    public function getConfiguration()
-    {
-        if (is_null($this->configuration)) {
-            $this->configuration = new Configuration();
-        }
+    private $httpClient;
 
-        return $this->configuration;
+    /**
+     * @param Configuration $configuration
+     * @param HttpClient $httpClient
+     */
+    public function __construct(Configuration $configuration, HttpClient $httpClient)
+    {
+        $this->configuration = $configuration;
+        $this->httpClient = $httpClient;
+        $this->urlHealthChecker = new UrlHealthChecker();
+        $this->urlHealthChecker->setHttpClient($httpClient);
+        $this->urlHealthChecker->setConfiguration($configuration->getUrlHealthCheckerConfiguration());
     }
 
     /**
@@ -68,19 +77,23 @@ class LinkChecker
 
     /**
      * @return LinkResult[]
+     *
+     * @throws QueryPathException
+     *
+     * @throws GuzzleException
      */
     public function getAll()
     {
-        if (is_null($this->linkCheckResults)) {
-            $this->linkCheckResults = array();
+        if (empty($this->webPage)) {
+            return [];
+        }
 
-            if (is_null($this->webPage)) {
-                return $this->linkCheckResults;
-            }
+        if (is_null($this->linkCheckResults)) {
+            $this->linkCheckResults = [];
 
             $linkFinderConfiguration = new LinkFinderConfiguration([
                 LinkFinderConfiguration::CONFIG_KEY_SOURCE => $this->webPage,
-                LinkFinderConfiguration::CONFIG_KEY_SOURCE_URL => $this->webPage->getHttpResponse()->getEffectiveUrl(),
+                LinkFinderConfiguration::CONFIG_KEY_SOURCE_URL => (string)$this->webPage->getUri(),
             ]);
 
             $linkFinder = new HtmlDocumentLinkUrlFinder();
@@ -108,10 +121,13 @@ class LinkChecker
 
     /**
      * @return array
+     *
+     * @throws QueryPathException
+     * @throws GuzzleException
      */
     public function getErrored()
     {
-        $links = array();
+        $links = [];
         foreach ($this->getAll() as $linkCheckResult) {
             /* @var $linkCheckResult LinkResult */
             if ($this->isErrored($linkCheckResult->getLinkState())) {
@@ -126,7 +142,7 @@ class LinkChecker
      *
      * @param LinkState $linkState
      *
-     * @return boolean
+     * @return bool
      */
     private function isErrored(LinkState $linkState)
     {
@@ -143,10 +159,13 @@ class LinkChecker
 
     /**
      * @return array
+     *
+     * @throws QueryPathException
+     * @throws GuzzleException
      */
     public function getWorking()
     {
-        $links = array();
+        $links = [];
         foreach ($this->getAll() as $linkCheckResult) {
             /* @var $linkCheckResult LinkResult */
             if (!$this->isErrored($linkCheckResult->getLinkState())) {
@@ -160,19 +179,11 @@ class LinkChecker
     /**
      * @param int $statusCode
      *
-     * @return boolean
+     * @return bool
      */
     private function isHttpErrorStatusCode($statusCode)
     {
-        if (in_array(substr((string)$statusCode, 0, 1), array('3', '4', '5'))) {
-            return true;
-        }
-
-        if ($statusCode == 999) {
-            return true;
-        }
-
-        return false;
+        return $statusCode >= 300;
     }
 
 
@@ -180,17 +191,21 @@ class LinkChecker
      * @param string $url
      *
      * @return LinkState
+     *
+     * @throws GuzzleException
      */
     private function getLinkState($url)
     {
+        $comparisonUrl = $this->getComparisonUrl($url);
+
         if ($this->hasLinkStateForUrl($url)) {
-            return $this->urlToLinkStateMap[$this->getComparisonUrl($url)];
+            return $this->urlToLinkStateMap[$comparisonUrl];
         }
 
         $linkState = $this->deriveLinkState($url);
 
         if (!$this->isErrored($linkState)) {
-            $this->urlToLinkStateMap[$this->getComparisonUrl($url)] = $linkState;
+            $this->urlToLinkStateMap[$comparisonUrl] = $linkState;
         }
 
         return $linkState;
@@ -200,17 +215,19 @@ class LinkChecker
      * @param string $url
      *
      * @return LinkState
+     *
+     * @throws GuzzleException
      */
     private function deriveLinkState($url)
     {
-        return $this->getUrlHealthChecker()->check($url);
+        return $this->urlHealthChecker->check($url);
     }
 
 
     /**
      * @param string $url
      *
-     * @return boolean
+     * @return bool
      */
     private function hasLinkStateForUrl($url)
     {
@@ -224,7 +241,7 @@ class LinkChecker
      */
     private function getComparisonUrl($url)
     {
-        if (!$this->getConfiguration()->ignoreFragmentInUrlComparison()) {
+        if (false === $this->configuration->getIgnoreFragmentInUrlComparison()) {
             return $url;
         }
 
@@ -242,7 +259,7 @@ class LinkChecker
     /**
      * @param string $url
      *
-     * @return boolean
+     * @return bool
      */
     private function isUrlToBeIncluded($url)
     {
@@ -251,7 +268,7 @@ class LinkChecker
             return false;
         }
 
-        if (in_array($url, $this->getConfiguration()->getUrlsToExclude())) {
+        if (in_array($url, $this->configuration->getUrlsToExclude())) {
             return false;
         }
 
@@ -265,35 +282,20 @@ class LinkChecker
     /**
      * @param NormalisedUrl $url
      *
-     * @return boolean
+     * @return bool
      */
     private function isUrlSchemeToBeIncluded(NormalisedUrl $url)
     {
-        return !in_array($url->getScheme(), $this->getConfiguration()->getSchemesToExclude());
+        return !in_array($url->getScheme(), $this->configuration->getSchemesToExclude());
     }
 
     /**
      * @param NormalisedUrl $url
      *
-     * @return boolean
+     * @return bool
      */
     private function isUrlDomainToBeIncluded(NormalisedUrl $url)
     {
-        return !in_array($url->getHost(), $this->getConfiguration()->getDomainsToExclude());
-    }
-
-    /**
-     * @return UrlHealthChecker
-     */
-    public function getUrlHealthChecker()
-    {
-        if (is_null($this->urlHealthChecker)) {
-            $this->urlHealthChecker = new UrlHealthChecker();
-            $this->urlHealthChecker->setConfiguration(new UrlHealthCheckerConfiguration([
-                UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_CLIENT => $this->getConfiguration()->getHttpClient(),
-            ]));
-        }
-
-        return $this->urlHealthChecker;
+        return !in_array($url->getHost(), $this->configuration->getDomainsToExclude());
     }
 }
