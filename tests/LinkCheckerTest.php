@@ -2,57 +2,61 @@
 
 namespace webignition\Tests\HtmlDocument\LinkChecker;
 
-use GuzzleHttp\Message\ResponseInterface;
-use Mockery\MockInterface;
-use PHPUnit_Framework_TestCase;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Exception\ConnectException;
-use GuzzleHttp\Message\Request;
-use GuzzleHttp\Message\ResponseInterface as HttpResponse;
-use GuzzleHttp\Subscriber\History as HttpHistorySubscriber;
-use GuzzleHttp\Subscriber\Mock as HttpMockSubscriber;
+use QueryPath\Exception as QueryPathException;
+use webignition\HtmlDocument\LinkChecker\Configuration;
 use webignition\HtmlDocument\LinkChecker\LinkChecker;
 use webignition\HtmlDocument\LinkChecker\LinkResult;
-use webignition\UrlHealthChecker\Configuration as UrlHeatlCheckerConfiguration;
+use webignition\InternetMediaType\Parser\ParseException as InternetMediaTypeParseException;
+use webignition\Tests\HtmlDocument\LinkChecker\Factory\FixtureLoader;
+use webignition\UrlHealthChecker\Configuration as UrlHealthCheckerConfiguration;
 use webignition\UrlHealthChecker\LinkState;
+use webignition\WebResource\Exception\InvalidContentTypeException;
 use webignition\WebResource\WebPage\WebPage;
 
-class LinkCheckerTest extends PHPUnit_Framework_TestCase
+class LinkCheckerTest extends \PHPUnit_Framework_TestCase
 {
+    public function testGetAllNoWebPageSet()
+    {
+        $linkChecker = new LinkChecker(new Configuration(), new HttpClient());
+
+        $this->assertEquals([], $linkChecker->getAll());
+    }
+
     /**
      * @dataProvider getAllGetErroredGetWorkingDataProvider
      *
-     * @param string $responseUrl
-     * @param string $responseBody
-     * @param array $urlHealthCheckerResponses
+     * @param WebPage $webPage
+     * @param array $httpFixtures
+     * @param Configuration $configuration
      * @param LinkResult[] $expectedGetAllResults
      * @param LinkResult[] $expectedGetErroredResults
      * @param LinkResult[] $expectedGetWorkingResults
-     * @param callable|null $linkCheckerModifierFunction
+     *
+     * @throws GuzzleException
+     * @throws QueryPathException
      */
     public function testGetAllGetErroredGetWorking(
-        $responseUrl,
-        $responseBody,
-        $urlHealthCheckerResponses,
+        WebPage $webPage,
+        $httpFixtures,
+        Configuration $configuration,
         $expectedGetAllResults,
         $expectedGetErroredResults,
-        $expectedGetWorkingResults,
-        $linkCheckerModifierFunction = null
+        $expectedGetWorkingResults
     ) {
-        $httpClient = $this->createHttpClient($urlHealthCheckerResponses);
+        $mockHandler = new MockHandler($httpFixtures);
 
-        $webPage = new WebPage();
-        $webPage->setHttpResponse($this->createHttpResponse($responseUrl, $responseBody));
+        $httpClient = new HttpClient(['handler' => HandlerStack::create($mockHandler)]);
 
-        $linkChecker = new LinkChecker();
-        $linkChecker->getConfiguration()->setHttpClient($httpClient);
+        $linkChecker = new LinkChecker($configuration, $httpClient);
         $linkChecker->setWebPage($webPage);
-
-        if (is_callable($linkCheckerModifierFunction)) {
-            call_user_func(function () use ($linkCheckerModifierFunction, $linkChecker) {
-                call_user_func($linkCheckerModifierFunction, $linkChecker);
-            }, $linkChecker);
-        }
 
         $this->assertEquals($expectedGetAllResults, $linkChecker->getAll());
         $this->assertEquals($expectedGetErroredResults, $linkChecker->getErrored());
@@ -61,34 +65,43 @@ class LinkCheckerTest extends PHPUnit_Framework_TestCase
 
     /**
      * @return array
+     *
+     * @throws InternetMediaTypeParseException
+     * @throws InvalidContentTypeException
      */
     public function getAllGetErroredGetWorkingDataProvider()
     {
+        $successResponse = new Response();
+        $redirectResponse = new Response(301, ['location' => '/redirect1']);
+        $internalServerErrorResponse = new Response(500);
+
         return [
             'no web page' => [
-                'responseUrl' => 'http://example.com',
-                'responseBody' => '',
-                'urlHealthCheckerResponses' => [],
+                'webPage' => $this->createWebPage('', 'http://example.com/'),
+                'httpFixtures' => [],
+                'configuration' => new Configuration(),
                 'expectedGetAllResults' => [],
                 'expectedGetErroredResults' => [],
                 'expectedGetWorkingResults' => [],
             ],
             'no links' => [
-                'responseUrl' => 'http://example.com',
-                'responseBody' => $this->getHtmlDocumentFixture('no-links'),
-                'urlHealthCheckerResponses' => [],
+                'webPage' => $this->createWebPage(FixtureLoader::load('no-links.html'), 'http://example.com/'),
+                'httpFixtures' => [],
+                'configuration' => new Configuration(),
                 'expectedGetAllResults' => [],
                 'expectedGetErroredResults' => [],
                 'expectedGetWorkingResults' => [],
             ],
             'check urls only once' => [
-                'responseUrl' => 'http://example.com',
-                'responseBody' => $this->getHtmlDocumentFixture('repeated-urls'),
-                'urlHealthCheckerResponses' => [
-                    'HTTP/1.1 200 OK',
-                    'HTTP/1.1 200 OK',
-                    'HTTP/1.1 200 OK',
+                'webPage' => $this->createWebPage(FixtureLoader::load('repeated-urls.html'), 'http://example.com/'),
+                'httpFixtures' => [
+                    $successResponse,
+                    $successResponse,
+                    $successResponse,
                 ],
+                'configuration' => new Configuration([
+                    Configuration::KEY_IGNORE_FRAGMENT_IN_URL_COMPARISON => true,
+                ]),
                 'expectedGetAllResults' => [
                     $this->createLinkResult(
                         'http://example.com/',
@@ -144,16 +157,21 @@ class LinkCheckerTest extends PHPUnit_Framework_TestCase
                 ],
             ],
             'excessive redirect counts as error' => [
-                'responseUrl' => 'http://example.com/foo',
-                'responseBody' => $this->getHtmlDocumentFixture('single-link'),
-                'urlHealthCheckerResponses' => [
-                    "HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect1\r\nContent-Length: 0\r\n\r\n",
-                    "HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect1\r\nContent-Length: 0\r\n\r\n",
-                    "HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect1\r\nContent-Length: 0\r\n\r\n",
-                    "HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect1\r\nContent-Length: 0\r\n\r\n",
-                    "HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect1\r\nContent-Length: 0\r\n\r\n",
-                    "HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect1\r\nContent-Length: 0\r\n\r\n",
+                'webPage' => $this->createWebPage(FixtureLoader::load('single-link.html'), 'http://example.com/'),
+                'httpFixtures' => [
+                    $redirectResponse,
+                    $redirectResponse,
+                    $redirectResponse,
+                    $redirectResponse,
+                    $redirectResponse,
+                    $redirectResponse,
                 ],
+                'configuration' => new Configuration([
+                    Configuration::KEY_URL_HEALTH_CHECKER_CONFIGURATION => new UrlHealthCheckerConfiguration([
+                        UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
+                        UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
+                    ]),
+                ]),
                 'expectedGetAllResults' => [
                     $this->createLinkResult(
                         'http://example.com/',
@@ -171,22 +189,22 @@ class LinkCheckerTest extends PHPUnit_Framework_TestCase
                     ),
                 ],
                 'expectedGetWorkingResults' => [],
-                'linkCheckerModifierFunction' => function (LinkChecker $linkChecker) {
-                    $linkChecker->getUrlHealthChecker()->setConfiguration(new UrlHeatlCheckerConfiguration([
-                        UrlHeatlCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
-                        UrlHeatlCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
-                        UrlHeatlCheckerConfiguration::CONFIG_KEY_HTTP_CLIENT =>
-                            $linkChecker->getConfiguration()->getHttpClient(),
-                    ]));
-                },
             ],
             'do not reuse failed link state' => [
-                'responseUrl' => 'http://example.com',
-                'responseBody' => $this->getHtmlDocumentFixture('two-links-same-url'),
-                'urlHealthCheckerResponses' => [
-                    'HTTP/1.1 500 Internal Server Error',
-                    'HTTP/1.1 200 OK'
+                'webPage' => $this->createWebPage(
+                    FixtureLoader::load('two-links-same-url.html'),
+                    'http://example.com/'
+                ),
+                'httpFixtures' => [
+                    $internalServerErrorResponse,
+                    $successResponse,
                 ],
+                'configuration' => new Configuration([
+                    Configuration::KEY_URL_HEALTH_CHECKER_CONFIGURATION => new UrlHealthCheckerConfiguration([
+                        UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
+                        UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
+                    ]),
+                ]),
                 'expectedGetAllResults' => [
                     $this->createLinkResult(
                         'http://example.com/',
@@ -217,21 +235,22 @@ class LinkCheckerTest extends PHPUnit_Framework_TestCase
                         200
                     ),
                 ],
-                'linkCheckerModifierFunction' => function (LinkChecker $linkChecker) {
-                    $linkChecker->getUrlHealthChecker()->setConfiguration(new UrlHeatlCheckerConfiguration([
-                        UrlHeatlCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
-                        UrlHeatlCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
-                        UrlHeatlCheckerConfiguration::CONFIG_KEY_HTTP_CLIENT =>
-                            $linkChecker->getConfiguration()->getHttpClient(),
-                    ]));
-                },
             ],
             'exclude domains' => [
-                'responseUrl' => 'http://example.com',
-                'responseBody' => $this->getHtmlDocumentFixture('multiple-links'),
-                'urlHealthCheckerResponses' => [
-                    'HTTP/1.1 200 OK'
+                'webPage' => $this->createWebPage(
+                    FixtureLoader::load('multiple-links.html'),
+                    'http://example.com/'
+                ),
+                'httpFixtures' => [
+                    $successResponse,
                 ],
+                'configuration' => new Configuration([
+                    Configuration::KEY_DOMAINS_TO_EXCLUDE => [
+                        'www.youtube.com',
+                        'blog.example.com',
+                        'example.com',
+                    ],
+                ]),
                 'expectedGetAllResults' => [
                     $this->createLinkResult(
                         'http://twitter.com/example',
@@ -249,61 +268,64 @@ class LinkCheckerTest extends PHPUnit_Framework_TestCase
                         200
                     ),
                 ],
-                'linkCheckerModifierFunction' => function (LinkChecker $linkChecker) {
-                    $linkChecker->getConfiguration()->setDomainsToExclude([
-                        'www.youtube.com',
-                        'blog.example.com',
-                        'example.com',
-                    ]);
-                },
             ],
             'exclude ftp mailto tel about:blank javascript schemes' => [
-                'responseUrl' => 'http://example.com',
-                'responseBody' => $this->getHtmlDocumentFixture('excluded-url-schemes'),
-                'urlHealthCheckerResponses' => [],
+                'webPage' => $this->createWebPage(
+                    FixtureLoader::load('excluded-url-schemes.html'),
+                    'http://example.com/'
+                ),
+                'httpFixtures' => [],
+                'configuration' => new Configuration(),
                 'expectedGetAllResults' => [],
                 'expectedGetErroredResults' => [],
                 'expectedGetWorkingResults' => [],
             ],
             'exclude urls' => [
-                'responseUrl' => 'http://example.com',
-                'responseBody' => $this->getHtmlDocumentFixture('multiple-links'),
-                'urlHealthCheckerResponses' => [
-                    'HTTP/1.1 200 OK',
+                'webPage' => $this->createWebPage(
+                    FixtureLoader::load('multiple-links.html'),
+                    'http://example.com/'
+                ),
+                'httpFixtures' => [
+                    $successResponse,
                 ],
-                'expectedGetAllResults' => [
-                    $this->createLinkResult(
-                        'http://example.com/images/twitter.png',
-                        '<img src="/images/twitter.png">',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                ],
-                'expectedGetErroredResults' => [],
-                'expectedGetWorkingResults' => [
-                    $this->createLinkResult(
-                        'http://example.com/images/twitter.png',
-                        '<img src="/images/twitter.png">',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                ],
-                'linkCheckerModifierFunction' => function (LinkChecker $linkChecker) {
-                    $linkChecker->getConfiguration()->setUrlsToExclude([
+                'configuration' => new Configuration([
+                    Configuration::KEY_URLS_TO_EXCLUDE => [
                         'http://www.youtube.com/example',
                         'http://blog.example.com/',
                         'http://twitter.com/example',
                         'http://example.com/images/youtube.png',
                         'http://example.com/images/blog.png',
-                    ]);
-                },
+                    ],
+                ]),
+                'expectedGetAllResults' => [
+                    $this->createLinkResult(
+                        'http://example.com/images/twitter.png',
+                        '<img src="/images/twitter.png">',
+                        LinkState::TYPE_HTTP,
+                        200
+                    ),
+                ],
+                'expectedGetErroredResults' => [],
+                'expectedGetWorkingResults' => [
+                    $this->createLinkResult(
+                        'http://example.com/images/twitter.png',
+                        '<img src="/images/twitter.png">',
+                        LinkState::TYPE_HTTP,
+                        200
+                    ),
+                ],
             ],
             'ignore url fragment' => [
-                'responseUrl' => 'http://example.com',
-                'responseBody' => $this->getHtmlDocumentFixture('two-links-different-fragments'),
-                'urlHealthCheckerResponses' => [
-                    'HTTP/1.1 200 OK'
+                'webPage' => $this->createWebPage(
+                    FixtureLoader::load('two-links-different-fragments.html'),
+                    'http://example.com/'
+                ),
+                'httpFixtures' => [
+                    $successResponse,
                 ],
+                'configuration' => new Configuration([
+                    Configuration::KEY_IGNORE_FRAGMENT_IN_URL_COMPARISON => true,
+                ]),
                 'expectedGetAllResults' => [
                     $this->createLinkResult(
                         'http://example.com/#one',
@@ -333,27 +355,32 @@ class LinkCheckerTest extends PHPUnit_Framework_TestCase
                         200
                     ),
                 ],
-                'linkCheckerModifierFunction' => function (LinkChecker $linkChecker) {
-                    $linkChecker->getConfiguration()->enableIgnoreFragmentInUrlComparison();
-                },
             ],
             'varied errors' => [
-                'responseUrl' => 'http://example.com',
-                'responseBody' => $this->getHtmlDocumentFixture('multiple-links'),
-                'urlHealthCheckerResponses' => [
+                'webPage' => $this->createWebPage(
+                    FixtureLoader::load('multiple-links.html'),
+                    'http://example.com/'
+                ),
+                'httpFixtures' => [
                     new ConnectException(
                         'cURL error 6: Couldn\'t resolve host. The given remote host was not resolved.',
                         new Request('GET', 'http://example.com/')
                     ),
-                    'HTTP/1.1 404',
-                    'HTTP/1.1 500',
+                    new Response(404),
+                    $internalServerErrorResponse,
                     new ConnectException(
                         'cURL error 28: Operation timeout.',
                         new Request('GET', 'http://example.com/')
                     ),
-                    'HTTP/1.1 200',
-                    'HTTP/1.1 999',
+                    $successResponse,
+                    new Response(999),
                 ],
+                'configuration' => new Configuration([
+                    Configuration::KEY_URL_HEALTH_CHECKER_CONFIGURATION => new UrlHealthCheckerConfiguration([
+                        UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
+                        UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
+                    ]),
+                ]),
                 'expectedGetAllResults' => [
                     $this->createLinkResult(
                         'http://www.youtube.com/example',
@@ -432,70 +459,8 @@ class LinkCheckerTest extends PHPUnit_Framework_TestCase
                         200
                     ),
                 ],
-                'linkCheckerModifierFunction' => function (LinkChecker $linkChecker) {
-                    $linkChecker->getUrlHealthChecker()->setConfiguration(new UrlHeatlCheckerConfiguration([
-                        UrlHeatlCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
-                        UrlHeatlCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
-                        UrlHeatlCheckerConfiguration::CONFIG_KEY_HTTP_CLIENT =>
-                            $linkChecker->getConfiguration()->getHttpClient(),
-                    ]));
-                },
             ],
         ];
-    }
-
-    /**
-     * @param string $url
-     * @param string $body
-     *
-     * @return MockInterface|HttpResponse
-     */
-    private function createHttpResponse($url, $body)
-    {
-        $httpResponse = \Mockery::mock(ResponseInterface::class);
-        $httpResponse
-            ->shouldReceive('getHeader')
-            ->with('content-type')
-            ->andReturn('text/html');
-
-        $httpResponse
-            ->shouldReceive('getEffectiveUrl')
-            ->andReturn($url);
-
-        $httpResponse
-            ->shouldReceive('getBody')
-            ->andReturn($body);
-
-        return $httpResponse;
-    }
-
-    /**
-     * @param array $responseFixtures
-     *
-     * @return HttpClient
-     */
-    private function createHttpClient($responseFixtures)
-    {
-        $httpClient = new HttpClient();
-        $httpClient->getEmitter()->attach(new HttpHistorySubscriber());
-
-        $httpClient->getEmitter()->attach(
-            new HttpMockSubscriber(
-                $responseFixtures
-            )
-        );
-
-        return $httpClient;
-    }
-
-    /**
-     * @param string $name
-     *
-     * @return string
-     */
-    private function getHtmlDocumentFixture($name)
-    {
-        return file_get_contents(__DIR__ . '/fixtures/html-documents/' . $name . '.html');
     }
 
     /**
@@ -513,5 +478,21 @@ class LinkCheckerTest extends PHPUnit_Framework_TestCase
             $context,
             new LinkState($linkStateType, $linkStateState)
         );
+    }
+
+    /**
+     * @param string $content
+     * @param string $url
+     * @return WebPage
+     *
+     * @throws InternetMediaTypeParseException
+     * @throws InvalidContentTypeException
+     */
+    private function createWebPage($content, $url)
+    {
+        $response = new Response(200, ['content-type' => 'text/html'], $content);
+        $uri = new Uri($url);
+
+        return new WebPage($response, $uri);
     }
 }

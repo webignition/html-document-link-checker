@@ -12,3 +12,7 @@ install:
 script:
   - composer cs
   - composer test
+
+cache:
+  directories:
+    - $HOME/.composer/cache/files

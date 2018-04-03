@@ -2,120 +2,104 @@
 
 namespace webignition\Tests\HtmlDocument\LinkChecker;
 
-use PHPUnit_Framework_TestCase;
 use webignition\HtmlDocument\LinkChecker\Configuration;
 
-class ConfigurationTest extends PHPUnit_Framework_TestCase
+class ConfigurationTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var Configuration
-     */
-    private $configuration;
-
-    protected function setUp()
-    {
-        parent::setUp();
-
-        $this->configuration = new Configuration();
-    }
-
-    public function testIgnoreFragmentInUrlComparisonIsDisabledByDefault()
-    {
-        $this->assertFalse($this->configuration->ignoreFragmentInUrlComparison());
-    }
-
-    public function testDisableIgnoreFragmentInUrlComparison()
-    {
-        $this->configuration->disableIgnoreFragmentInUrlComparison();
-        $this->assertFalse($this->configuration->ignoreFragmentInUrlComparison());
-    }
-
-    public function testEnableIgnoreFragmentInUrlComparison()
-    {
-        $this->configuration->enableIgnoreFragmentInUrlComparison();
-        $this->assertTrue($this->configuration->ignoreFragmentInUrlComparison());
-    }
-
-    /**
-     * @dataProvider valuesToExcludeDataProvider
+     * @dataProvider createDataProvider
      *
-     * @param string[] $valuesToExclude
-     * @param string[] $expectedValuesToExclude
+     * @param array $configurationValues
+     * @param array $expectedSchemesToExclude
+     * @param array $expectedUrlsToExclude
+     * @param array $expectedDomainsToExclude
+     * @param bool $expectedIgnoreFragmentInUrlComparison
      */
-    public function testSetDomainsToExclude($valuesToExclude, $expectedValuesToExclude)
-    {
-        $this->assertEmpty($this->configuration->getDomainsToExclude());
-        $this->configuration->setDomainsToExclude($valuesToExclude);
-        $this->assertEquals($expectedValuesToExclude, $this->configuration->getDomainsToExclude());
-    }
+    public function testCreate(
+        array $configurationValues,
+        array $expectedSchemesToExclude,
+        array $expectedUrlsToExclude,
+        array $expectedDomainsToExclude,
+        $expectedIgnoreFragmentInUrlComparison
+    ) {
+        $configuration = new Configuration($configurationValues);
 
-    public function testGetDefaultSchemesToExclude()
-    {
-        $this->assertEquals(
-            [
-                Configuration::URL_SCHEME_MAILTO,
-                Configuration::URL_SCHEME_ABOUT,
-                Configuration::URL_SCHEME_JAVASCRIPT,
-                Configuration::URL_SCHEME_FTP,
-                Configuration::URL_SCHEME_TEL,
-            ],
-            $this->configuration->getSchemesToExclude()
-        );
-    }
-
-    /**
-     * @dataProvider valuesToExcludeDataProvider
-     *
-     * @param string[] $valuesToExclude
-     * @param string[] $expectedValuesToExclude
-     */
-    public function testSetSchemesToExclude($valuesToExclude, $expectedValuesToExclude)
-    {
-        $this->configuration->setSchemesToExclude($valuesToExclude);
-        $this->assertEquals($expectedValuesToExclude, $this->configuration->getSchemesToExclude());
-    }
-
-    /**
-     * @dataProvider valuesToExcludeDataProvider
-     *
-     * @param string[] $valuesToExclude
-     * @param string[] $expectedValuesToExclude
-     */
-    public function testSetUrlsToExclude($valuesToExclude, $expectedValuesToExclude)
-    {
-        $this->configuration->setSchemesToExclude($valuesToExclude);
-        $this->assertEquals($expectedValuesToExclude, $this->configuration->getSchemesToExclude());
+        $this->assertEquals($expectedSchemesToExclude, $configuration->getSchemesToExclude());
+        $this->assertEquals($expectedUrlsToExclude, $configuration->getUrlsToExclude());
+        $this->assertEquals($expectedDomainsToExclude, $configuration->getDomainsToExclude());
+        $this->assertEquals($expectedIgnoreFragmentInUrlComparison, $configuration->getIgnoreFragmentInUrlComparison());
     }
 
     /**
      * @return array
      */
-    public function valuesToExcludeDataProvider()
+    public function createDataProvider()
     {
+        $defaultSchemesToExclude = [
+            Configuration::URL_SCHEME_MAILTO,
+            Configuration::URL_SCHEME_ABOUT,
+            Configuration::URL_SCHEME_JAVASCRIPT,
+            Configuration::URL_SCHEME_FTP,
+            Configuration::URL_SCHEME_TEL
+        ];
+
         return [
-            'none' => [
-                'valuesToExclude' => [],
-                'expectedValuesToExclude' => [],
+            'defaults' => [
+                'configurationValues' => [],
+                'expectedSchemesToExclude' => $defaultSchemesToExclude,
+                'expectedUrlsToExclude' => [],
+                'expectedDomainsToExclude' => [],
+                'expectedIgnoreFragmentInUrlComparison' => false,
             ],
-            'one' => [
-                'valuesToExclude' => [
-                    'foo',
+            'set schemes to exclude' => [
+                'configurationValues' => [
+                    Configuration::KEY_SCHEMES_TO_EXCLUDE => [
+                        'foo',
+                        'bar',
+                    ],
                 ],
-                'expectedValuesToExclude' => [
-                    'foo',
-                ],
-            ],
-            'many' => [
-                'valuesToExclude' => [
+                'expectedSchemesToExclude' => [
                     'foo',
                     'bar',
-                    'foobar',
                 ],
-                'expectedValuesToExclude' => [
-                    'foo',
-                    'bar',
-                    'foobar',
+                'expectedUrlsToExclude' => [],
+                'expectedDomainsToExclude' => [],
+                'expectedIgnoreFragmentInUrlComparison' => false,
+            ],
+            'set urls to exclude' => [
+                'configurationValues' => [
+                    Configuration::KEY_URLS_TO_EXCLUDE => [
+                        'http://foo.example.com/bar',
+                    ],
                 ],
+                'expectedSchemesToExclude' => $defaultSchemesToExclude,
+                'expectedUrlsToExclude' => [
+                    'http://foo.example.com/bar',
+                ],
+                'expectedDomainsToExclude' => [],
+                'expectedIgnoreFragmentInUrlComparison' => false,
+            ],
+            'set domains to exclude' => [
+                'configurationValues' => [
+                    Configuration::KEY_DOMAINS_TO_EXCLUDE => [
+                        'example.com',
+                    ],
+                ],
+                'expectedSchemesToExclude' => $defaultSchemesToExclude,
+                'expectedUrlsToExclude' => [],
+                'expectedDomainsToExclude' => [
+                    'example.com',
+                ],
+                'expectedIgnoreFragmentInUrlComparison' => false,
+            ],
+            'ignore fragment in url comparison' => [
+                'configurationValues' => [
+                    Configuration::KEY_IGNORE_FRAGMENT_IN_URL_COMPARISON => true,
+                ],
+                'expectedSchemesToExclude' => $defaultSchemesToExclude,
+                'expectedUrlsToExclude' => [],
+                'expectedDomainsToExclude' => [],
+                'expectedIgnoreFragmentInUrlComparison' => true,
             ],
         ];
     }
