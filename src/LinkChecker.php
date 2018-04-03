@@ -150,7 +150,7 @@ class LinkChecker
             return true;
         }
 
-        if ($this->isHttpErrorStatusCode($linkState->getState())) {
+        if ($linkState->getState() >= 300) {
             return true;
         }
 
@@ -177,17 +177,6 @@ class LinkChecker
     }
 
     /**
-     * @param int $statusCode
-     *
-     * @return bool
-     */
-    private function isHttpErrorStatusCode($statusCode)
-    {
-        return $statusCode >= 300;
-    }
-
-
-    /**
      * @param string $url
      *
      * @return LinkState
@@ -196,13 +185,14 @@ class LinkChecker
      */
     private function getLinkState($url)
     {
-        $comparisonUrl = $this->getComparisonUrl($url);
+        $comparisonUrl = $this->createComparisonUrl($url);
+        $hasLinkStateForUrl = isset($this->urlToLinkStateMap[$comparisonUrl]);
 
-        if ($this->hasLinkStateForUrl($url)) {
+        if ($hasLinkStateForUrl) {
             return $this->urlToLinkStateMap[$comparisonUrl];
         }
 
-        $linkState = $this->deriveLinkState($url);
+        $linkState = $this->urlHealthChecker->check($url);
 
         if (!$this->isErrored($linkState)) {
             $this->urlToLinkStateMap[$comparisonUrl] = $linkState;
@@ -214,32 +204,9 @@ class LinkChecker
     /**
      * @param string $url
      *
-     * @return LinkState
-     *
-     * @throws GuzzleException
-     */
-    private function deriveLinkState($url)
-    {
-        return $this->urlHealthChecker->check($url);
-    }
-
-
-    /**
-     * @param string $url
-     *
-     * @return bool
-     */
-    private function hasLinkStateForUrl($url)
-    {
-        return isset($this->urlToLinkStateMap[$this->getComparisonUrl($url)]);
-    }
-
-    /**
-     * @param string $url
-     *
      * @return string
      */
-    private function getComparisonUrl($url)
+    private function createComparisonUrl($url)
     {
         if (false === $this->configuration->getIgnoreFragmentInUrlComparison()) {
             return $url;
@@ -264,38 +231,23 @@ class LinkChecker
     private function isUrlToBeIncluded($url)
     {
         $urlObject = new NormalisedUrl($url);
-        if (!$this->isUrlSchemeToBeIncluded($urlObject)) {
+
+        $isUrlSchemeExcluded = in_array($urlObject->getScheme(), $this->configuration->getSchemesToExclude());
+        $isUrlExcluded = in_array((string)$url, $this->configuration->getUrlsToExclude());
+        $isUrlDomainExcluded = in_array($urlObject->getHost(), $this->configuration->getDomainsToExclude());
+
+        if ($isUrlSchemeExcluded) {
             return false;
         }
 
-        if (in_array($url, $this->configuration->getUrlsToExclude())) {
+        if ($isUrlExcluded) {
             return false;
         }
 
-        if (!$this->isUrlDomainToBeIncluded($urlObject)) {
+        if ($isUrlDomainExcluded) {
             return false;
         }
 
         return true;
-    }
-
-    /**
-     * @param NormalisedUrl $url
-     *
-     * @return bool
-     */
-    private function isUrlSchemeToBeIncluded(NormalisedUrl $url)
-    {
-        return !in_array($url->getScheme(), $this->configuration->getSchemesToExclude());
-    }
-
-    /**
-     * @param NormalisedUrl $url
-     *
-     * @return bool
-     */
-    private function isUrlDomainToBeIncluded(NormalisedUrl $url)
-    {
-        return !in_array($url->getHost(), $this->configuration->getDomainsToExclude());
     }
 }
