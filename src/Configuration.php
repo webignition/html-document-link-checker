@@ -95,7 +95,7 @@ class Configuration
     /**
      * @return string[]
      */
-    public function getUrlsToExclude()
+    public function getUrlsToExclude(): array
     {
         return $this->urlsToExclude;
     }
@@ -103,7 +103,7 @@ class Configuration
     /**
      * @return string[]
      */
-    public function getDomainsToExclude()
+    public function getDomainsToExclude(): array
     {
         return $this->domainsToExclude;
     }
@@ -111,23 +111,17 @@ class Configuration
     /**
      * @return string[]
      */
-    public function getSchemesToExclude()
+    public function getSchemesToExclude(): array
     {
         return $this->schemesToExclude;
     }
 
-    /**
-     * @return bool
-     */
-    public function getIgnoreFragmentInUrlComparison()
+    public function getIgnoreFragmentInUrlComparison(): bool
     {
         return $this->ignoreFragmentInUrlComparison;
     }
 
-    /**
-     * @return UrlHealthCheckerConfiguration
-     */
-    public function getUrlHealthCheckerConfiguration()
+    public function getUrlHealthCheckerConfiguration(): UrlHealthCheckerConfiguration
     {
         return $this->urlHealthCheckerConfiguration;
     }

@@ -20,11 +20,6 @@ class LinkResult
      */
     private $linkState = null;
 
-    /**
-     * @param string $url
-     * @param string $context
-     * @param LinkState $linkState
-     */
     public function __construct($url, $context, LinkState $linkState)
     {
         $this->setUrl($url);
@@ -32,50 +27,32 @@ class LinkResult
         $this->setLinkState($linkState);
     }
 
-    /**
-     * @param LinkState $linkState
-     */
     public function setLinkState(LinkState $linkState)
     {
         $this->linkState = $linkState;
     }
 
-    /**
-     * @return LinkState
-     */
-    public function getLinkState()
+    public function getLinkState(): LinkState
     {
         return $this->linkState;
     }
 
-    /**
-     * @param string $context
-     */
-    public function setContext($context)
+    public function setContext(string $context)
     {
         $this->context = $context;
     }
 
-    /**
-     * @return string
-     */
-    public function getContext()
+    public function getContext(): string
     {
         return $this->context;
     }
 
-    /**
-     * @param string $url
-     */
-    public function setUrl($url)
+    public function setUrl(string $url)
     {
         $this->url = $url;
     }
 
-    /**
-     * @return string
-     */
-    public function getUrl()
+    public function getUrl(): string
     {
         return $this->url;
     }

@@ -53,10 +53,6 @@ class LinkChecker
      */
     private $httpClient;
 
-    /**
-     * @param Configuration $configuration
-     * @param HttpClient $httpClient
-     */
     public function __construct(Configuration $configuration, HttpClient $httpClient)
     {
         $this->configuration = $configuration;
@@ -66,9 +62,6 @@ class LinkChecker
         $this->urlHealthChecker->setConfiguration($configuration->getUrlHealthCheckerConfiguration());
     }
 
-    /**
-     * @param WebPage $webPage
-     */
     public function setWebPage(WebPage $webPage)
     {
         $this->webPage = $webPage;
@@ -79,10 +72,9 @@ class LinkChecker
      * @return LinkResult[]
      *
      * @throws QueryPathException
-     *
      * @throws GuzzleException
      */
-    public function getAll()
+    public function getAll(): array
     {
         if (empty($this->webPage)) {
             return [];
@@ -120,12 +112,12 @@ class LinkChecker
     }
 
     /**
-     * @return array
+     * @return LinkResult[]
      *
      * @throws QueryPathException
      * @throws GuzzleException
      */
-    public function getErrored()
+    public function getErrored(): array
     {
         $links = [];
         foreach ($this->getAll() as $linkCheckResult) {
@@ -138,13 +130,7 @@ class LinkChecker
         return $links;
     }
 
-    /**
-     *
-     * @param LinkState $linkState
-     *
-     * @return bool
-     */
-    private function isErrored(LinkState $linkState)
+    private function isErrored(LinkState $linkState): bool
     {
         if ($linkState->getType() == LinkState::TYPE_CURL) {
             return true;
@@ -158,12 +144,12 @@ class LinkChecker
     }
 
     /**
-     * @return array
+     * @return LinkResult[]
      *
      * @throws QueryPathException
      * @throws GuzzleException
      */
-    public function getWorking()
+    public function getWorking(): array
     {
         $links = [];
         foreach ($this->getAll() as $linkCheckResult) {
@@ -180,10 +166,9 @@ class LinkChecker
      * @param string $url
      *
      * @return LinkState
-     *
      * @throws GuzzleException
      */
-    private function getLinkState($url)
+    private function getLinkState(string $url): LinkState
     {
         $comparisonUrl = $this->createComparisonUrl($url);
         $hasLinkStateForUrl = isset($this->urlToLinkStateMap[$comparisonUrl]);
@@ -201,12 +186,7 @@ class LinkChecker
         return $linkState;
     }
 
-    /**
-     * @param string $url
-     *
-     * @return string
-     */
-    private function createComparisonUrl($url)
+    private function createComparisonUrl(string $url): string
     {
         if (false === $this->configuration->getIgnoreFragmentInUrlComparison()) {
             return $url;
@@ -222,13 +202,7 @@ class LinkChecker
         return (string)$urlObject;
     }
 
-
-    /**
-     * @param string $url
-     *
-     * @return bool
-     */
-    private function isUrlToBeIncluded($url)
+    private function isUrlToBeIncluded(string $url): bool
     {
         $urlObject = new NormalisedUrl($url);
 

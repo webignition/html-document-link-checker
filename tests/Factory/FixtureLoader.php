@@ -4,7 +4,7 @@ namespace webignition\Tests\HtmlDocument\LinkChecker\Factory;
 
 class FixtureLoader
 {
-    public static function load($name)
+    public static function load(string $name): string
     {
         $fixturePath = realpath(__DIR__ . '/../Fixtures/' . $name);
 

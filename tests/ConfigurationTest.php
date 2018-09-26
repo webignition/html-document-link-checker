@@ -4,7 +4,7 @@ namespace webignition\Tests\HtmlDocument\LinkChecker;
 
 use webignition\HtmlDocument\LinkChecker\Configuration;
 
-class ConfigurationTest extends \PHPUnit_Framework_TestCase
+class ConfigurationTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @dataProvider createDataProvider
@@ -30,10 +30,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expectedIgnoreFragmentInUrlComparison, $configuration->getIgnoreFragmentInUrlComparison());
     }
 
-    /**
-     * @return array
-     */
-    public function createDataProvider()
+    public function createDataProvider(): array
     {
         $defaultSchemesToExclude = [
             Configuration::URL_SCHEME_MAILTO,
