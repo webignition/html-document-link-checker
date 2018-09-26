@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6fac3c39ff01d1b578ba388b77db1298",
+    "content-hash": "70006c0c0e560db634ab754096077b04",
     "packages": [
         {
             "name": "etechnika/idna-convert",
@@ -922,27 +922,27 @@
         },
         {
             "name": "webignition/url-health-checker",
-            "version": "1.0",
+            "version": "2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webignition/url-health-checker.git",
-                "reference": "aa5f49bcabc258d1b33c1b37f0918756c2597c8d"
+                "reference": "12de9db230ca3a13a6488b1b5b10ead673052c19"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webignition/url-health-checker/zipball/aa5f49bcabc258d1b33c1b37f0918756c2597c8d",
-                "reference": "aa5f49bcabc258d1b33c1b37f0918756c2597c8d",
+                "url": "https://api.github.com/repos/webignition/url-health-checker/zipball/12de9db230ca3a13a6488b1b5b10ead673052c19",
+                "reference": "12de9db230ca3a13a6488b1b5b10ead673052c19",
                 "shasum": ""
             },
             "require": {
-                "guzzlehttp/guzzle": "~6",
-                "php": ">=5.6.0",
+                "guzzlehttp/guzzle": "^6",
+                "php": ">=7.2",
                 "webignition/guzzle-curl-exception": "^1",
                 "webignition/http-history-container": ">=0.3,<1"
             },
             "require-dev": {
                 "mockery/mockery": "^1",
-                "phpunit/phpunit": "^5.0",
+                "phpunit/phpunit": "^7",
                 "squizlabs/php_codesniffer": "^3"
             },
             "type": "library",
@@ -969,7 +969,7 @@
                 "health",
                 "url"
             ],
-            "time": "2018-04-02T17:30:09+00:00"
+            "time": "2018-09-26T18:36:20+00:00"
         },
         {
             "name": "webignition/web-page-model",
