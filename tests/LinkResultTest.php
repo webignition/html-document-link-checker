@@ -14,7 +14,7 @@ class LinkResultTest extends \PHPUnit\Framework\TestCase
      * @param string $context
      * @param LinkState $linkState
      */
-    public function testCreate($url, $context, LinkState $linkState)
+    public function testCreate(string $url, string $context, LinkState $linkState)
     {
         $linkResult = new LinkResult($url, $context, $linkState);
 
@@ -23,10 +23,7 @@ class LinkResultTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($linkState, $linkResult->getLinkState());
     }
 
-    /**
-     * @return array
-     */
-    public function createDataProvider()
+    public function createDataProvider(): array
     {
         return [
             'default' => [

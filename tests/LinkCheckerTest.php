@@ -23,6 +23,10 @@ use webignition\WebResource\WebPage\WebPage;
 
 class LinkCheckerTest extends \PHPUnit\Framework\TestCase
 {
+    /**
+     * @throws GuzzleException
+     * @throws QueryPathException
+     */
     public function testGetAllNoWebPageSet()
     {
         $linkChecker = new LinkChecker(new Configuration(), new HttpClient());
@@ -69,7 +73,7 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
      * @throws InternetMediaTypeParseException
      * @throws InvalidContentTypeException
      */
-    public function getAllGetErroredGetWorkingDataProvider()
+    public function getAllGetErroredGetWorkingDataProvider(): array
     {
         $successResponse = new Response();
         $redirectResponse = new Response(301, ['location' => '/redirect1']);
@@ -463,16 +467,12 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @param string $url
-     * @param string $context
-     * @param string $linkStateType
-     * @param string|int $linkStateState
-     *
-     * @return LinkResult
-     */
-    private function createLinkResult($url, $context, $linkStateType, $linkStateState)
-    {
+    private function createLinkResult(
+        string $url,
+        string $context,
+        string $linkStateType,
+        int $linkStateState
+    ): LinkResult {
         return new LinkResult(
             $url,
             $context,
@@ -488,7 +488,7 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
      * @throws InternetMediaTypeParseException
      * @throws InvalidContentTypeException
      */
-    private function createWebPage($content, $url)
+    private function createWebPage(string $content, string $url): WebPage
     {
         $response = new Response(200, ['content-type' => 'text/html'], $content);
         $uri = new Uri($url);
