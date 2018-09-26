@@ -21,7 +21,7 @@ use webignition\UrlHealthChecker\LinkState;
 use webignition\WebResource\Exception\InvalidContentTypeException;
 use webignition\WebResource\WebPage\WebPage;
 
-class LinkCheckerTest extends \PHPUnit_Framework_TestCase
+class LinkCheckerTest extends \PHPUnit\Framework\TestCase
 {
     public function testGetAllNoWebPageSet()
     {

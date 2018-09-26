@@ -5,7 +5,7 @@ namespace webignition\Tests\HtmlDocument\LinkChecker;
 use webignition\HtmlDocument\LinkChecker\LinkResult;
 use webignition\UrlHealthChecker\LinkState;
 
-class LinkResultTest extends \PHPUnit_Framework_TestCase
+class LinkResultTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @dataProvider createDataProvider
