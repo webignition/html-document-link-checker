@@ -5,379 +5,117 @@ namespace webignition\Tests\HtmlDocument\LinkChecker;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
-use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Exception\ConnectException;
-use QueryPath\Exception as QueryPathException;
 use webignition\HtmlDocument\LinkChecker\Configuration;
 use webignition\HtmlDocument\LinkChecker\LinkChecker;
-use webignition\HtmlDocument\LinkChecker\LinkResult;
-use webignition\InternetMediaType\Parser\ParseException as InternetMediaTypeParseException;
-use webignition\Tests\HtmlDocument\LinkChecker\Factory\FixtureLoader;
 use webignition\UrlHealthChecker\Configuration as UrlHealthCheckerConfiguration;
 use webignition\UrlHealthChecker\LinkState;
-use webignition\WebResource\Exception\InvalidContentTypeException;
-use webignition\WebResource\WebPage\WebPage;
+use webignition\HttpHistoryContainer\Container as HttpHistoryContainer;
 
 class LinkCheckerTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @throws GuzzleException
-     * @throws QueryPathException
+     * @var MockHandler
      */
-    public function testGetAllNoWebPageSet()
-    {
-        $linkChecker = new LinkChecker(new Configuration(), new HttpClient());
+    private $mockHandler;
 
-        $this->assertEquals([], $linkChecker->getAll());
+    /**
+     * @var HttpHistoryContainer
+     */
+    private $httpHistoryContainer;
+
+    /**
+     * @var HttpClient
+     */
+    private $httpClient;
+
+    protected function setUp()
+    {
+        parent::setUp();
+
+        $this->mockHandler = new MockHandler();
+        $this->httpHistoryContainer = new HttpHistoryContainer();
+
+        $handlerStack = HandlerStack::create($this->mockHandler);
+        $handlerStack->push(Middleware::history($this->httpHistoryContainer));
+
+        $this->httpClient = new HttpClient(['handler' => $handlerStack]);
+    }
+
+    private function appendHttpFixtures(array $httpFixtures)
+    {
+        foreach ($httpFixtures as $httpFixture) {
+            $this->mockHandler->append($httpFixture);
+        }
+    }
+
+    private function createLinkChecker(?Configuration $configuration = null): LinkChecker
+    {
+        if (empty($configuration)) {
+            $configuration = new Configuration();
+        }
+
+        return new LinkChecker($configuration, $this->httpClient);
     }
 
     /**
-     * @dataProvider getAllGetErroredGetWorkingDataProvider
+     * @dataProvider getLinkStateDataProvider
      *
-     * @param WebPage $webPage
      * @param array $httpFixtures
      * @param Configuration $configuration
-     * @param LinkResult[] $expectedGetAllResults
-     * @param LinkResult[] $expectedGetErroredResults
-     * @param LinkResult[] $expectedGetWorkingResults
+     * @param LinkState $expectedLinkState
      *
      * @throws GuzzleException
-     * @throws QueryPathException
      */
-    public function testGetAllGetErroredGetWorking(
-        WebPage $webPage,
-        $httpFixtures,
+    public function testGetLinkState(
+        array $httpFixtures,
         Configuration $configuration,
-        $expectedGetAllResults,
-        $expectedGetErroredResults,
-        $expectedGetWorkingResults
+        LinkState $expectedLinkState
     ) {
-        $mockHandler = new MockHandler($httpFixtures);
+        $url = 'http://example.com/';
 
-        $httpClient = new HttpClient(['handler' => HandlerStack::create($mockHandler)]);
+        $this->appendHttpFixtures($httpFixtures);
+        $linkChecker = $this->createLinkChecker($configuration);
 
-        $linkChecker = new LinkChecker($configuration, $httpClient);
-        $linkChecker->setWebPage($webPage);
-
-        $this->assertEquals($expectedGetAllResults, $linkChecker->getAll());
-        $this->assertEquals($expectedGetErroredResults, $linkChecker->getErrored());
-        $this->assertEquals($expectedGetWorkingResults, $linkChecker->getWorking());
+        $this->assertEquals($expectedLinkState, $linkChecker->getLinkState($url));
     }
 
-    /**
-     * @return array
-     *
-     * @throws InternetMediaTypeParseException
-     * @throws InvalidContentTypeException
-     */
-    public function getAllGetErroredGetWorkingDataProvider(): array
+    public function getLinkStateDataProvider()
     {
-        $successResponse = new Response();
-        $redirectResponse = new Response(301, ['location' => '/redirect1']);
-        $internalServerErrorResponse = new Response(500);
-
         return [
-            'no web page' => [
-                'webPage' => $this->createWebPage('', 'http://example.com/'),
-                'httpFixtures' => [],
-                'configuration' => new Configuration(),
-                'expectedGetAllResults' => [],
-                'expectedGetErroredResults' => [],
-                'expectedGetWorkingResults' => [],
-            ],
-            'no links' => [
-                'webPage' => $this->createWebPage(FixtureLoader::load('no-links.html'), 'http://example.com/'),
-                'httpFixtures' => [],
-                'configuration' => new Configuration(),
-                'expectedGetAllResults' => [],
-                'expectedGetErroredResults' => [],
-                'expectedGetWorkingResults' => [],
-            ],
-            'check urls only once' => [
-                'webPage' => $this->createWebPage(FixtureLoader::load('repeated-urls.html'), 'http://example.com/'),
-                'httpFixtures' => [
-                    $successResponse,
-                    $successResponse,
-                    $successResponse,
-                ],
-                'configuration' => new Configuration([
-                    Configuration::KEY_IGNORE_FRAGMENT_IN_URL_COMPARISON => true,
-                ]),
-                'expectedGetAllResults' => [
-                    $this->createLinkResult(
-                        'http://example.com/',
-                        '<a href="http://example.com/">Example One</a>',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                    $this->createLinkResult(
-                        'http://example.com/',
-                        '<a href="http://example.com/">Example Two</a>',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                    $this->createLinkResult(
-                        'http://example.com/foo',
-                        '<a href="http://example.com/foo">Example Foo One</a>',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                    $this->createLinkResult(
-                        'http://example.com/foo',
-                        '<a href="http://example.com/foo">Example Foo Two</a>',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                ],
-                'expectedGetErroredResults' => [],
-                'expectedGetWorkingResults' => [
-                    $this->createLinkResult(
-                        'http://example.com/',
-                        '<a href="http://example.com/">Example One</a>',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                    $this->createLinkResult(
-                        'http://example.com/',
-                        '<a href="http://example.com/">Example Two</a>',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                    $this->createLinkResult(
-                        'http://example.com/foo',
-                        '<a href="http://example.com/foo">Example Foo One</a>',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                    $this->createLinkResult(
-                        'http://example.com/foo',
-                        '<a href="http://example.com/foo">Example Foo Two</a>',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                ],
-            ],
             'excessive redirect counts as error' => [
-                'webPage' => $this->createWebPage(FixtureLoader::load('single-link.html'), 'http://example.com/'),
-                'httpFixtures' => [
-                    $redirectResponse,
-                    $redirectResponse,
-                    $redirectResponse,
-                    $redirectResponse,
-                    $redirectResponse,
-                    $redirectResponse,
-                ],
+                'httpFixtures' => array_fill(0, 6, new Response(301, ['location' => '/redirect1'])),
                 'configuration' => new Configuration([
                     Configuration::KEY_URL_HEALTH_CHECKER_CONFIGURATION => new UrlHealthCheckerConfiguration([
                         UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
                         UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
                     ]),
                 ]),
-                'expectedGetAllResults' => [
-                    $this->createLinkResult(
-                        'http://example.com/',
-                        '<a href="http://example.com/">Example no subdomain</a>',
-                        LinkState::TYPE_HTTP,
-                        301
-                    ),
-                ],
-                'expectedGetErroredResults' => [
-                    $this->createLinkResult(
-                        'http://example.com/',
-                        '<a href="http://example.com/">Example no subdomain</a>',
-                        LinkState::TYPE_HTTP,
-                        301
-                    ),
-                ],
-                'expectedGetWorkingResults' => [],
+                'expectedLinkState' => new LinkState(LinkState::TYPE_HTTP, 301),
             ],
-            'do not reuse failed link state' => [
-                'webPage' => $this->createWebPage(
-                    FixtureLoader::load('two-links-same-url.html'),
-                    'http://example.com/'
-                ),
+            'retry on bad response' => [
                 'httpFixtures' => [
-                    $internalServerErrorResponse,
-                    $successResponse,
+                    new Response(500),
+                    new Response(200),
                 ],
                 'configuration' => new Configuration([
                     Configuration::KEY_URL_HEALTH_CHECKER_CONFIGURATION => new UrlHealthCheckerConfiguration([
-                        UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
+                        UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => true,
                         UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
                     ]),
                 ]),
-                'expectedGetAllResults' => [
-                    $this->createLinkResult(
-                        'http://example.com/',
-                        '<a href="http://example.com/">Example 1</a>',
-                        LinkState::TYPE_HTTP,
-                        500
-                    ),
-                    $this->createLinkResult(
-                        'http://example.com/',
-                        '<a href="http://example.com/">Example 2</a>',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                ],
-                'expectedGetErroredResults' => [
-                    $this->createLinkResult(
-                        'http://example.com/',
-                        '<a href="http://example.com/">Example 1</a>',
-                        LinkState::TYPE_HTTP,
-                        500
-                    ),
-                ],
-                'expectedGetWorkingResults' => [
-                    $this->createLinkResult(
-                        'http://example.com/',
-                        '<a href="http://example.com/">Example 2</a>',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                ],
+                'expectedLinkState' => new LinkState(LinkState::TYPE_HTTP, 200),
             ],
-            'exclude domains' => [
-                'webPage' => $this->createWebPage(
-                    FixtureLoader::load('multiple-links.html'),
-                    'http://example.com/'
-                ),
+            'curl timeout' => [
                 'httpFixtures' => [
-                    $successResponse,
-                ],
-                'configuration' => new Configuration([
-                    Configuration::KEY_DOMAINS_TO_EXCLUDE => [
-                        'www.youtube.com',
-                        'blog.example.com',
-                        'example.com',
-                    ],
-                ]),
-                'expectedGetAllResults' => [
-                    $this->createLinkResult(
-                        'http://twitter.com/example',
-                        '<a href="http://twitter.com/example"><img src="/images/twitter.png"></a>',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                ],
-                'expectedGetErroredResults' => [],
-                'expectedGetWorkingResults' => [
-                    $this->createLinkResult(
-                        'http://twitter.com/example',
-                        '<a href="http://twitter.com/example"><img src="/images/twitter.png"></a>',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                ],
-            ],
-            'exclude ftp mailto tel about:blank javascript schemes' => [
-                'webPage' => $this->createWebPage(
-                    FixtureLoader::load('excluded-url-schemes.html'),
-                    'http://example.com/'
-                ),
-                'httpFixtures' => [],
-                'configuration' => new Configuration(),
-                'expectedGetAllResults' => [],
-                'expectedGetErroredResults' => [],
-                'expectedGetWorkingResults' => [],
-            ],
-            'exclude urls' => [
-                'webPage' => $this->createWebPage(
-                    FixtureLoader::load('multiple-links.html'),
-                    'http://example.com/'
-                ),
-                'httpFixtures' => [
-                    $successResponse,
-                ],
-                'configuration' => new Configuration([
-                    Configuration::KEY_URLS_TO_EXCLUDE => [
-                        'http://www.youtube.com/example',
-                        'http://blog.example.com/',
-                        'http://twitter.com/example',
-                        'http://example.com/images/youtube.png',
-                        'http://example.com/images/blog.png',
-                    ],
-                ]),
-                'expectedGetAllResults' => [
-                    $this->createLinkResult(
-                        'http://example.com/images/twitter.png',
-                        '<img src="/images/twitter.png">',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                ],
-                'expectedGetErroredResults' => [],
-                'expectedGetWorkingResults' => [
-                    $this->createLinkResult(
-                        'http://example.com/images/twitter.png',
-                        '<img src="/images/twitter.png">',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                ],
-            ],
-            'ignore url fragment' => [
-                'webPage' => $this->createWebPage(
-                    FixtureLoader::load('two-links-different-fragments.html'),
-                    'http://example.com/'
-                ),
-                'httpFixtures' => [
-                    $successResponse,
-                ],
-                'configuration' => new Configuration([
-                    Configuration::KEY_IGNORE_FRAGMENT_IN_URL_COMPARISON => true,
-                ]),
-                'expectedGetAllResults' => [
-                    $this->createLinkResult(
-                        'http://example.com/#one',
-                        '<a href="http://example.com/#one">Example One</a>',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                    $this->createLinkResult(
-                        'http://example.com/#two',
-                        '<a href="http://example.com/#two">Example Two</a>',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                ],
-                'expectedGetErroredResults' => [],
-                'expectedGetWorkingResults' => [
-                    $this->createLinkResult(
-                        'http://example.com/#one',
-                        '<a href="http://example.com/#one">Example One</a>',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                    $this->createLinkResult(
-                        'http://example.com/#two',
-                        '<a href="http://example.com/#two">Example Two</a>',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                ],
-            ],
-            'varied errors' => [
-                'webPage' => $this->createWebPage(
-                    FixtureLoader::load('multiple-links.html'),
-                    'http://example.com/'
-                ),
-                'httpFixtures' => [
-                    new ConnectException(
-                        'cURL error 6: Couldn\'t resolve host. The given remote host was not resolved.',
-                        new Request('GET', 'http://example.com/')
-                    ),
-                    new Response(404),
-                    $internalServerErrorResponse,
                     new ConnectException(
                         'cURL error 28: Operation timeout.',
                         new Request('GET', 'http://example.com/')
                     ),
-                    $successResponse,
-                    new Response(999),
                 ],
                 'configuration' => new Configuration([
                     Configuration::KEY_URL_HEALTH_CHECKER_CONFIGURATION => new UrlHealthCheckerConfiguration([
@@ -385,114 +123,227 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
                         UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
                     ]),
                 ]),
-                'expectedGetAllResults' => [
-                    $this->createLinkResult(
-                        'http://www.youtube.com/example',
-                        '<a href="http://www.youtube.com/example"><img src="/images/youtube.png"></a>',
-                        LinkState::TYPE_CURL,
-                        6
-                    ),
-                    $this->createLinkResult(
-                        'http://example.com/images/youtube.png',
-                        '<img src="/images/youtube.png">',
-                        LinkState::TYPE_HTTP,
-                        404
-                    ),
-                    $this->createLinkResult(
-                        'http://blog.example.com/',
-                        '<a href="http://blog.example.com"><img src="/images/blog.png"></a>',
-                        LinkState::TYPE_HTTP,
-                        500
-                    ),
-                    $this->createLinkResult(
-                        'http://example.com/images/blog.png',
-                        '<img src="/images/blog.png">',
-                        LinkState::TYPE_CURL,
-                        28
-                    ),
-                    $this->createLinkResult(
-                        'http://twitter.com/example',
-                        '<a href="http://twitter.com/example"><img src="/images/twitter.png"></a>',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                    $this->createLinkResult(
-                        'http://example.com/images/twitter.png',
-                        '<img src="/images/twitter.png">',
-                        LinkState::TYPE_HTTP,
-                        999
-                    ),
+                'expectedLinkState' => new LinkState(LinkState::TYPE_CURL, 28),
+            ],
+            'http internal server error' => [
+                'httpFixtures' => array_fill(0, 6, new Response(500)),
+                'configuration' => new Configuration([
+                    Configuration::KEY_URL_HEALTH_CHECKER_CONFIGURATION => new UrlHealthCheckerConfiguration([
+                        UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
+                        UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
+                    ]),
+                ]),
+                'expectedLinkState' => new LinkState(LinkState::TYPE_HTTP, 500),
+            ],
+            'http ok' => [
+                'httpFixtures' => [
+                    new Response(),
                 ],
-                'expectedGetErroredResults' => [
-                    $this->createLinkResult(
-                        'http://www.youtube.com/example',
-                        '<a href="http://www.youtube.com/example"><img src="/images/youtube.png"></a>',
-                        LinkState::TYPE_CURL,
-                        6
-                    ),
-                    $this->createLinkResult(
-                        'http://example.com/images/youtube.png',
-                        '<img src="/images/youtube.png">',
-                        LinkState::TYPE_HTTP,
-                        404
-                    ),
-                    $this->createLinkResult(
-                        'http://blog.example.com/',
-                        '<a href="http://blog.example.com"><img src="/images/blog.png"></a>',
-                        LinkState::TYPE_HTTP,
-                        500
-                    ),
-                    $this->createLinkResult(
-                        'http://example.com/images/blog.png',
-                        '<img src="/images/blog.png">',
-                        LinkState::TYPE_CURL,
-                        28
-                    ),
-                    $this->createLinkResult(
-                        'http://example.com/images/twitter.png',
-                        '<img src="/images/twitter.png">',
-                        LinkState::TYPE_HTTP,
-                        999
-                    ),
-                ],
-                'expectedGetWorkingResults' => [
-                    $this->createLinkResult(
-                        'http://twitter.com/example',
-                        '<a href="http://twitter.com/example"><img src="/images/twitter.png"></a>',
-                        LinkState::TYPE_HTTP,
-                        200
-                    ),
-                ],
+                'configuration' => new Configuration([
+                    Configuration::KEY_URL_HEALTH_CHECKER_CONFIGURATION => new UrlHealthCheckerConfiguration([
+                        UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
+                        UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
+                    ]),
+                ]),
+                'expectedLinkState' => new LinkState(LinkState::TYPE_HTTP, 200),
             ],
         ];
     }
 
-    private function createLinkResult(
-        string $url,
-        string $context,
-        string $linkStateType,
-        int $linkStateState
-    ): LinkResult {
-        return new LinkResult(
-            $url,
-            $context,
-            new LinkState($linkStateType, $linkStateState)
-        );
+    /**
+     * @throws GuzzleException
+     */
+    public function testNonErrorUrlsAreCheckedOnlyOnce()
+    {
+        $this->appendHttpFixtures([
+            new Response(),
+        ]);
+
+        $url = 'http://example.com/';
+
+        $linkChecker = $this->createLinkChecker();
+
+        $iterationCount = 10;
+
+        for ($i = 0; $i < $iterationCount; $i++) {
+            $linkChecker->getLinkState($url);
+        }
+
+        $this->assertEquals(1, $this->httpHistoryContainer->count());
     }
 
     /**
-     * @param string $content
-     * @param string $url
-     * @return WebPage
+     * @dataProvider excludedDomainsDataProvider
      *
-     * @throws InternetMediaTypeParseException
-     * @throws InvalidContentTypeException
+     * @param string $url
+     * @param bool $expectedIsExcluded
+     *
+     * @throws GuzzleException
      */
-    private function createWebPage(string $content, string $url): WebPage
+    public function testExcludedDomains(string $url, bool $expectedIsExcluded)
     {
-        $response = new Response(200, ['content-type' => 'text/html'], $content);
-        $uri = new Uri($url);
+        $this->appendHttpFixtures([
+            new Response(),
+        ]);
 
-        return new WebPage($response, $uri);
+        $configuration = new Configuration([
+            Configuration::KEY_DOMAINS_TO_EXCLUDE => [
+                'foo.example.com',
+                'bar.example.com',
+            ],
+        ]);
+
+        $linkChecker = $this->createLinkChecker($configuration);
+        $this->assertEquals($expectedIsExcluded, empty($linkChecker->getLinkState($url)));
+    }
+
+    public function excludedDomainsDataProvider(): array
+    {
+        return [
+            'http://foo.example.com/ is excluded' => [
+                'url' => 'http://foo.example.com/',
+                'expectedIsExcluded' => true,
+            ],
+            'http://foo.example.com/path is excluded' => [
+                'url' => 'http://foo.example.com/path',
+                'expectedIsExcluded' => true,
+            ],
+            'https://foo.example.com/ is excluded' => [
+                'url' => 'http://foo.example.com/',
+                'expectedIsExcluded' => true,
+            ],
+            'http://bar.example.com/ is excluded' => [
+                'url' => 'http://bar.example.com/',
+                'expectedIsExcluded' => true,
+            ],
+            'http://example.com/ is not excluded' => [
+                'url' => 'http://example.com/',
+                'expectedIsExcluded' => false,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider excludedSchemesDataProvider
+     *
+     * @param string $url
+     * @param bool $expectedIsExcluded
+     * @throws GuzzleException
+     */
+    public function testExcludedSchemes(string $url, bool $expectedIsExcluded)
+    {
+        $this->appendHttpFixtures([
+            new Response(),
+        ]);
+
+        $linkChecker = $this->createLinkChecker();
+        $this->assertEquals($expectedIsExcluded, empty($linkChecker->getLinkState($url)));
+    }
+
+    public function excludedSchemesDataProvider(): array
+    {
+        return [
+            'ftp scheme is excluded by default' => [
+                'url' => 'ftp://example.com/',
+                'expectedIsExcluded' => true,
+            ],
+            'mailto scheme is excluded by default' => [
+                'url' => 'mailto:user@example.com',
+                'expectedIsExcluded' => true,
+            ],
+            'tel scheme is excluded by default' => [
+                'url' => 'tel:0123456789',
+                'expectedIsExcluded' => true,
+            ],
+            'about:blank scheme is excluded by default' => [
+                'url' => 'about:blank',
+                'expectedIsExcluded' => true,
+            ],
+            'javascript scheme is excluded by default' => [
+                'url' => 'javascript:void(0)',
+                'expectedIsExcluded' => true,
+            ],
+            'http scheme is excluded by default' => [
+                'url' => 'http://example.com/',
+                'expectedIsExcluded' => false,
+            ],
+            'https scheme is excluded by default' => [
+                'url' => 'https://example.com/',
+                'expectedIsExcluded' => false,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider excludedUrlsDataProvider
+     *
+     * @param string $url
+     * @param bool $expectedIsExcluded
+     *
+     * @throws GuzzleException
+     */
+    public function testExcludedUrls(string $url, bool $expectedIsExcluded)
+    {
+        $this->appendHttpFixtures([
+            new Response(),
+        ]);
+
+        $configuration = new Configuration([
+            Configuration::KEY_URLS_TO_EXCLUDE => [
+                'http://example.com/one',
+                'http://example.com/two',
+            ],
+        ]);
+
+        $linkChecker = $this->createLinkChecker($configuration);
+        $this->assertEquals($expectedIsExcluded, empty($linkChecker->getLinkState($url)));
+    }
+
+    public function excludedUrlsDataProvider(): array
+    {
+        return [
+            'http://example.com/one is excluded' => [
+                'url' => 'http://example.com/one',
+                'expectedIsExcluded' => true,
+            ],
+            'http://example.com/two is excluded' => [
+                'url' => 'http://example.com/two',
+                'expectedIsExcluded' => true,
+            ],
+            'https://example.com/one is not excluded' => [
+                'url' => 'https://example.com/one',
+                'expectedIsExcluded' => false,
+            ],
+            'http://example.com/ is not excluded' => [
+                'url' => 'http://example.com/',
+                'expectedIsExcluded' => false,
+            ],
+        ];
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    public function testIgnoreUrlFragmentInComparisons()
+    {
+        $this->appendHttpFixtures([
+            new Response(),
+        ]);
+
+        $url1 = 'http://example.com/#one';
+        $url2 = 'http://example.com/#two';
+        $url3 = 'http://example.com/';
+
+        $configuration = new Configuration([
+            Configuration::KEY_IGNORE_FRAGMENT_IN_URL_COMPARISON => true,
+        ]);
+
+        $linkChecker = $this->createLinkChecker($configuration);
+
+        $linkChecker->getLinkState($url1);
+        $linkChecker->getLinkState($url2);
+        $linkChecker->getLinkState($url3);
+
+        $this->assertEquals(1, $this->httpHistoryContainer->count());
     }
 }
