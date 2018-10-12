@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "86a5cdc131ba1bfe44c3b81c427c4800",
+    "content-hash": "18deeab0f162e83903fb0cb64671a053",
     "packages": [
         {
             "name": "etechnika/idna-convert",
