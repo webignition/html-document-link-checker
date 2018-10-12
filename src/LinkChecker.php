@@ -3,7 +3,6 @@
 namespace webignition\HtmlDocument\LinkChecker;
 
 use GuzzleHttp\Client as HttpClient;
-use GuzzleHttp\Exception\GuzzleException;
 use webignition\NormalisedUrl\NormalisedUrl;
 use webignition\UrlHealthChecker\UrlHealthChecker;
 use webignition\UrlHealthChecker\LinkState;
@@ -52,7 +51,6 @@ class LinkChecker
      * @param string $url
      *
      * @return LinkState
-     * @throws GuzzleException
      */
     public function getLinkState(string $url): ?LinkState
     {

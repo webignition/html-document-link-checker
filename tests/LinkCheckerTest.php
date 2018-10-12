@@ -2,7 +2,6 @@
 
 namespace webignition\Tests\HtmlDocument\LinkChecker;
 
-use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
@@ -68,8 +67,6 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
      * @param array $httpFixtures
      * @param Configuration $configuration
      * @param LinkState $expectedLinkState
-     *
-     * @throws GuzzleException
      */
     public function testGetLinkState(
         array $httpFixtures,
@@ -150,9 +147,6 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @throws GuzzleException
-     */
     public function testNonErrorUrlsAreCheckedOnlyOnce()
     {
         $this->appendHttpFixtures([
@@ -177,8 +171,6 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
      *
      * @param string $url
      * @param bool $expectedIsExcluded
-     *
-     * @throws GuzzleException
      */
     public function testExcludedDomains(string $url, bool $expectedIsExcluded)
     {
@@ -228,7 +220,6 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
      *
      * @param string $url
      * @param bool $expectedIsExcluded
-     * @throws GuzzleException
      */
     public function testExcludedSchemes(string $url, bool $expectedIsExcluded)
     {
@@ -279,8 +270,6 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
      *
      * @param string $url
      * @param bool $expectedIsExcluded
-     *
-     * @throws GuzzleException
      */
     public function testExcludedUrls(string $url, bool $expectedIsExcluded)
     {
@@ -321,9 +310,6 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @throws GuzzleException
-     */
     public function testIgnoreUrlFragmentInComparisons()
     {
         $this->appendHttpFixtures([
