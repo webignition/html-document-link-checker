@@ -3,7 +3,6 @@
 namespace webignition\HtmlDocument\LinkChecker;
 
 use GuzzleHttp\Client as HttpClient;
-use GuzzleHttp\Exception\GuzzleException;
 use webignition\NormalisedUrl\NormalisedUrl;
 use webignition\UrlHealthChecker\UrlHealthChecker;
 use webignition\UrlHealthChecker\LinkState;
@@ -48,12 +47,6 @@ class LinkChecker
         $this->urlHealthChecker->setConfiguration($configuration->getUrlHealthCheckerConfiguration());
     }
 
-    /**
-     * @param string $url
-     *
-     * @return LinkState
-     * @throws GuzzleException
-     */
     public function getLinkState(string $url): ?LinkState
     {
         $comparisonUrl = $this->createComparisonUrl($url);
