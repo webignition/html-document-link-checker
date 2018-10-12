@@ -81,7 +81,7 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expectedLinkState, $linkChecker->getLinkState($url));
     }
 
-    public function getLinkStateDataProvider()
+    public function getLinkStateDataProvider(): array
     {
         return [
             'excessive redirect counts as error' => [

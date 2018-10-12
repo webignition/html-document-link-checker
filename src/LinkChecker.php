@@ -47,11 +47,6 @@ class LinkChecker
         $this->urlHealthChecker->setConfiguration($configuration->getUrlHealthCheckerConfiguration());
     }
 
-    /**
-     * @param string $url
-     *
-     * @return LinkState
-     */
     public function getLinkState(string $url): ?LinkState
     {
         $comparisonUrl = $this->createComparisonUrl($url);
