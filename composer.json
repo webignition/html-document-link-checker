@@ -28,9 +28,9 @@
     "require": {
         "php": ">=7.2",
         "guzzlehttp/guzzle":"^6",
-        "webignition/web-page-model": ">=3.1.1,<4",
-        "webignition/html-document-link-finder":">=3.0,<4",
-        "webignition/url":">=1.9.6",
+        "webignition/web-page-model": ">=5.1,<6",
+        "webignition/html-document-link-finder":">=4,<5",
+        "webignition/url":">=2,<3",
         "webignition/url-health-checker":"^2"
     },
     "require-dev": {
