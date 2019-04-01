@@ -81,7 +81,7 @@ class LinkChecker
             return $url;
         }
 
-        $urlObject->setFragment(null);
+        $urlObject->setFragment('');
 
         return (string)$urlObject;
     }

@@ -18,9 +18,11 @@
         }
     },
     "scripts": {
-        "test": "./vendor/bin/phpunit --colors=always",
+        "static-analysis": "./vendor/bin/phpstan analyse src tests --level=7",
         "cs": "./vendor/bin/phpcs src tests --colors --standard=PSR2",
+        "test": "./vendor/bin/phpunit --colors=always",
         "ci": [
+            "@composer static-analysis",
             "@composer cs",
             "@composer test"
         ]
@@ -36,6 +38,7 @@
         "phpunit/phpunit": "^7.0",
         "squizlabs/php_codesniffer": "^3",
         "mockery/mockery": "^1",
-        "webignition/http-history-container": ">=0.3,<1"
+        "webignition/http-history-container": ">=0.3,<1",
+        "phpstan/phpstan": "^0.11.5"
     }
 }
