@@ -30,7 +30,6 @@
     "require": {
         "php": ">=7.2",
         "guzzlehttp/guzzle":"^6",
-        "webignition/html-document-link-finder":">=4,<5",
         "webignition/url-health-checker":"^2",
         "webignition/uri": "^0.4.0"
     },
