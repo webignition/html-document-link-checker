@@ -2,7 +2,6 @@
 
 namespace webignition\HtmlDocument\LinkChecker;
 
-use GuzzleHttp\Client as HttpClient;
 use webignition\IgnoredUrlVerifier\IgnoredUrlVerifier;
 use webignition\Uri\Normalizer;
 use webignition\Uri\Uri;
@@ -35,18 +34,10 @@ class LinkChecker
      */
     private $urlHealthChecker = null;
 
-    /**
-     * @var HttpClient
-     */
-    private $httpClient;
-
-    public function __construct(Configuration $configuration, HttpClient $httpClient)
+    public function __construct(Configuration $configuration, UrlHealthChecker $urlHealthChecker)
     {
         $this->configuration = $configuration;
-        $this->httpClient = $httpClient;
-        $this->urlHealthChecker = new UrlHealthChecker();
-        $this->urlHealthChecker->setHttpClient($httpClient);
-        $this->urlHealthChecker->setConfiguration($configuration->getUrlHealthCheckerConfiguration());
+        $this->urlHealthChecker = $urlHealthChecker;
     }
 
     public function getLinkState(string $url): ?LinkState

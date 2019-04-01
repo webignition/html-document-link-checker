@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpDocSignatureInspection */
 
 namespace webignition\Tests\HtmlDocument\LinkChecker;
 
@@ -14,6 +15,7 @@ use webignition\HtmlDocument\LinkChecker\LinkChecker;
 use webignition\UrlHealthChecker\Configuration as UrlHealthCheckerConfiguration;
 use webignition\UrlHealthChecker\LinkState;
 use webignition\HttpHistoryContainer\Container as HttpHistoryContainer;
+use webignition\UrlHealthChecker\UrlHealthChecker;
 
 class LinkCheckerTest extends \PHPUnit\Framework\TestCase
 {
@@ -52,31 +54,32 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    private function createLinkChecker(?Configuration $configuration = null): LinkChecker
+    private function createUrlHealthChecker(?UrlHealthCheckerConfiguration $configuration = null): UrlHealthChecker
     {
-        if (empty($configuration)) {
-            $configuration = new Configuration();
-        }
+        $configuration = $configuration ?? new UrlHealthCheckerConfiguration();
 
-        return new LinkChecker($configuration, $this->httpClient);
+        $urlHealthChecker = new UrlHealthChecker();
+        $urlHealthChecker->setConfiguration($configuration);
+        $urlHealthChecker->setHttpClient($this->httpClient);
+
+        return $urlHealthChecker;
     }
 
     /**
      * @dataProvider getLinkStateDataProvider
-     *
-     * @param array $httpFixtures
-     * @param Configuration $configuration
-     * @param LinkState $expectedLinkState
      */
     public function testGetLinkState(
         array $httpFixtures,
         Configuration $configuration,
+        UrlHealthCheckerConfiguration $urlHealthCheckerConfiguration,
         LinkState $expectedLinkState
     ) {
-        $url = 'http://example.com/';
-
         $this->appendHttpFixtures($httpFixtures);
-        $linkChecker = $this->createLinkChecker($configuration);
+
+        $urlHealthChecker = $this->createUrlHealthChecker($urlHealthCheckerConfiguration);
+
+        $linkChecker = new LinkChecker($configuration, $urlHealthChecker);
+        $url = 'http://example.com/';
 
         $this->assertEquals($expectedLinkState, $linkChecker->getLinkState($url));
     }
@@ -86,11 +89,10 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
         return [
             'excessive redirect counts as error' => [
                 'httpFixtures' => array_fill(0, 6, new Response(301, ['location' => '/redirect1'])),
-                'configuration' => new Configuration([
-                    Configuration::KEY_URL_HEALTH_CHECKER_CONFIGURATION => new UrlHealthCheckerConfiguration([
-                        UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
-                        UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
-                    ]),
+                'configuration' => new Configuration(),
+                'urlHealthCheckerConfiguration' => new UrlHealthCheckerConfiguration([
+                    UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
+                    UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
                 ]),
                 'expectedLinkState' => new LinkState(LinkState::TYPE_HTTP, 301),
             ],
@@ -99,11 +101,10 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
                     new Response(500),
                     new Response(200),
                 ],
-                'configuration' => new Configuration([
-                    Configuration::KEY_URL_HEALTH_CHECKER_CONFIGURATION => new UrlHealthCheckerConfiguration([
-                        UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => true,
-                        UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
-                    ]),
+                'configuration' => new Configuration(),
+                'urlHealthCheckerConfiguration' => new UrlHealthCheckerConfiguration([
+                    UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => true,
+                    UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
                 ]),
                 'expectedLinkState' => new LinkState(LinkState::TYPE_HTTP, 200),
             ],
@@ -114,21 +115,19 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
                         new Request('GET', 'http://example.com/')
                     ),
                 ],
-                'configuration' => new Configuration([
-                    Configuration::KEY_URL_HEALTH_CHECKER_CONFIGURATION => new UrlHealthCheckerConfiguration([
-                        UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
-                        UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
-                    ]),
+                'configuration' => new Configuration(),
+                'urlHealthCheckerConfiguration' => new UrlHealthCheckerConfiguration([
+                    UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
+                    UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
                 ]),
                 'expectedLinkState' => new LinkState(LinkState::TYPE_CURL, 28),
             ],
             'http internal server error' => [
                 'httpFixtures' => array_fill(0, 6, new Response(500)),
-                'configuration' => new Configuration([
-                    Configuration::KEY_URL_HEALTH_CHECKER_CONFIGURATION => new UrlHealthCheckerConfiguration([
-                        UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
-                        UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
-                    ]),
+                'configuration' => new Configuration(),
+                'urlHealthCheckerConfiguration' => new UrlHealthCheckerConfiguration([
+                    UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
+                    UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
                 ]),
                 'expectedLinkState' => new LinkState(LinkState::TYPE_HTTP, 500),
             ],
@@ -136,11 +135,10 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
                 'httpFixtures' => [
                     new Response(),
                 ],
-                'configuration' => new Configuration([
-                    Configuration::KEY_URL_HEALTH_CHECKER_CONFIGURATION => new UrlHealthCheckerConfiguration([
-                        UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
-                        UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
-                    ]),
+                'configuration' => new Configuration(),
+                'urlHealthCheckerConfiguration' => new UrlHealthCheckerConfiguration([
+                    UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
+                    UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
                 ]),
                 'expectedLinkState' => new LinkState(LinkState::TYPE_HTTP, 200),
             ],
@@ -155,7 +153,7 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
 
         $url = 'http://example.com/';
 
-        $linkChecker = $this->createLinkChecker();
+        $linkChecker = new LinkChecker(new Configuration(), $this->createUrlHealthChecker());
 
         $iterationCount = 10;
 
@@ -168,9 +166,6 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider excludedDomainsDataProvider
-     *
-     * @param string $url
-     * @param bool $expectedIsExcluded
      */
     public function testExcludedDomains(string $url, bool $expectedIsExcluded)
     {
@@ -185,7 +180,8 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
             ],
         ]);
 
-        $linkChecker = $this->createLinkChecker($configuration);
+        $linkChecker = new LinkChecker($configuration, $this->createUrlHealthChecker());
+
         $this->assertEquals($expectedIsExcluded, empty($linkChecker->getLinkState($url)));
     }
 
@@ -217,9 +213,6 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider excludedSchemesDataProvider
-     *
-     * @param string $url
-     * @param bool $expectedIsExcluded
      */
     public function testExcludedSchemes(string $url, bool $expectedIsExcluded)
     {
@@ -227,7 +220,7 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
             new Response(),
         ]);
 
-        $linkChecker = $this->createLinkChecker();
+        $linkChecker = new LinkChecker(new Configuration(), $this->createUrlHealthChecker());
         $this->assertEquals($expectedIsExcluded, empty($linkChecker->getLinkState($url)));
     }
 
@@ -267,9 +260,6 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider excludedUrlsDataProvider
-     *
-     * @param string $url
-     * @param bool $expectedIsExcluded
      */
     public function testExcludedUrls(string $url, bool $expectedIsExcluded)
     {
@@ -284,7 +274,7 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
             ],
         ]);
 
-        $linkChecker = $this->createLinkChecker($configuration);
+        $linkChecker = new LinkChecker($configuration, $this->createUrlHealthChecker());
         $this->assertEquals($expectedIsExcluded, empty($linkChecker->getLinkState($url)));
     }
 
@@ -324,7 +314,7 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
             Configuration::KEY_IGNORE_FRAGMENT_IN_URL_COMPARISON => true,
         ]);
 
-        $linkChecker = $this->createLinkChecker($configuration);
+        $linkChecker = new LinkChecker($configuration, $this->createUrlHealthChecker());
 
         $linkChecker->getLinkState($url1);
         $linkChecker->getLinkState($url2);
