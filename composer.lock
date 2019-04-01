@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d9e377a6b25ff592cbbfc72a5ae852df",
+    "content-hash": "80afc7701ced0710ad3e6936741cebb9",
     "packages": [
         {
             "name": "algo26-matthias/idna-convert",
@@ -382,6 +382,42 @@
                 "psr-7"
             ],
             "time": "2018-05-15T12:07:58+00:00"
+        },
+        {
+            "name": "webignition/ignored-url-verifier",
+            "version": "1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/webignition/ignored-url-verifier.git",
+                "reference": "03ea2e9fac35de9dda24a60909c2cd5466ade609"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/webignition/ignored-url-verifier/zipball/03ea2e9fac35de9dda24a60909c2cd5466ade609",
+                "reference": "03ea2e9fac35de9dda24a60909c2cd5466ade609",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2.0",
+                "webignition/uri": ">=0.3,<1"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^0.11.1",
+                "phpunit/phpunit": "^7",
+                "squizlabs/php_codesniffer": "^3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "webignition\\IgnoredUrlVerifier\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "homepage": "https://github.com/webignition/ignored-url-verifier",
+            "time": "2019-04-01T15:04:01+00:00"
         },
         {
             "name": "webignition/uri",

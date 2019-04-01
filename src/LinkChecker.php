@@ -3,6 +3,7 @@
 namespace webignition\HtmlDocument\LinkChecker;
 
 use GuzzleHttp\Client as HttpClient;
+use webignition\IgnoredUrlVerifier\IgnoredUrlVerifier;
 use webignition\Uri\Normalizer;
 use webignition\Uri\Uri;
 use webignition\UrlHealthChecker\UrlHealthChecker;
@@ -52,7 +53,7 @@ class LinkChecker
     {
         $comparisonUrl = $this->createComparisonUrl($url);
 
-        if (!$this->isUrlToBeIncluded($comparisonUrl)) {
+        if ($this->isUrlExcluded($comparisonUrl)) {
             return null;
         }
 
@@ -89,27 +90,14 @@ class LinkChecker
         return (string) $uri;
     }
 
-    private function isUrlToBeIncluded(string $url): bool
+    private function isUrlExcluded(string $url): bool
     {
-        $uri = new Uri($url);
-        $uri = Normalizer::normalize($uri);
+        $ignoredUrlVerifier = new IgnoredUrlVerifier();
 
-        $isUrlSchemeExcluded = in_array($uri->getScheme(), $this->configuration->getSchemesToExclude());
-        $isUrlExcluded = in_array($url, $this->configuration->getUrlsToExclude());
-        $isUrlDomainExcluded = in_array($uri->getHost(), $this->configuration->getDomainsToExclude());
-
-        if ($isUrlSchemeExcluded) {
-            return false;
-        }
-
-        if ($isUrlExcluded) {
-            return false;
-        }
-
-        if ($isUrlDomainExcluded) {
-            return false;
-        }
-
-        return true;
+        return $ignoredUrlVerifier->isUrlIgnored($url, [
+            IgnoredUrlVerifier::EXCLUSIONS_SCHEMES => $this->configuration->getSchemesToExclude(),
+            IgnoredUrlVerifier::EXCLUSIONS_HOSTS => $this->configuration->getDomainsToExclude(),
+            IgnoredUrlVerifier::EXCLUSIONS_URLS => $this->configuration->getUrlsToExclude(),
+        ]);
     }
 }
