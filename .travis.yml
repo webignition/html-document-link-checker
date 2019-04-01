@@ -1,14 +1,12 @@
-sudo: false
 language: php
 php:
-  - 7.2
+  - "7.2"
 
 install:
   - composer install
 
 script:
-  - composer cs
-  - composer test
+  - composer ci
 
 cache:
   directories:
