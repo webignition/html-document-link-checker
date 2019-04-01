@@ -10,7 +10,6 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Exception\ConnectException;
-use webignition\HtmlDocument\LinkChecker\Configuration;
 use webignition\HtmlDocument\LinkChecker\LinkChecker;
 use webignition\UrlHealthChecker\Configuration as UrlHealthCheckerConfiguration;
 use webignition\UrlHealthChecker\LinkState;
@@ -70,7 +69,6 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
      */
     public function testGetLinkState(
         array $httpFixtures,
-        Configuration $configuration,
         UrlHealthCheckerConfiguration $urlHealthCheckerConfiguration,
         LinkState $expectedLinkState
     ) {
@@ -78,7 +76,7 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
 
         $urlHealthChecker = $this->createUrlHealthChecker($urlHealthCheckerConfiguration);
 
-        $linkChecker = new LinkChecker($configuration, $urlHealthChecker);
+        $linkChecker = new LinkChecker($urlHealthChecker);
         $url = 'http://example.com/';
 
         $this->assertEquals($expectedLinkState, $linkChecker->getLinkState($url));
@@ -89,7 +87,6 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
         return [
             'excessive redirect counts as error' => [
                 'httpFixtures' => array_fill(0, 6, new Response(301, ['location' => '/redirect1'])),
-                'configuration' => new Configuration(),
                 'urlHealthCheckerConfiguration' => new UrlHealthCheckerConfiguration([
                     UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
                     UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
@@ -101,7 +98,6 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
                     new Response(500),
                     new Response(200),
                 ],
-                'configuration' => new Configuration(),
                 'urlHealthCheckerConfiguration' => new UrlHealthCheckerConfiguration([
                     UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => true,
                     UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
@@ -115,7 +111,6 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
                         new Request('GET', 'http://example.com/')
                     ),
                 ],
-                'configuration' => new Configuration(),
                 'urlHealthCheckerConfiguration' => new UrlHealthCheckerConfiguration([
                     UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
                     UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
@@ -124,7 +119,6 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
             ],
             'http internal server error' => [
                 'httpFixtures' => array_fill(0, 6, new Response(500)),
-                'configuration' => new Configuration(),
                 'urlHealthCheckerConfiguration' => new UrlHealthCheckerConfiguration([
                     UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
                     UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
@@ -135,7 +129,6 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
                 'httpFixtures' => [
                     new Response(),
                 ],
-                'configuration' => new Configuration(),
                 'urlHealthCheckerConfiguration' => new UrlHealthCheckerConfiguration([
                     UrlHealthCheckerConfiguration::CONFIG_KEY_RETRY_ON_BAD_RESPONSE => false,
                     UrlHealthCheckerConfiguration::CONFIG_KEY_HTTP_METHOD_LIST => ['GET'],
@@ -153,7 +146,7 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
 
         $url = 'http://example.com/';
 
-        $linkChecker = new LinkChecker(new Configuration(), $this->createUrlHealthChecker());
+        $linkChecker = new LinkChecker($this->createUrlHealthChecker());
 
         $iterationCount = 10;
 
@@ -174,11 +167,7 @@ class LinkCheckerTest extends \PHPUnit\Framework\TestCase
         $url2 = 'http://example.com/#two';
         $url3 = 'http://example.com/';
 
-        $configuration = new Configuration([
-            Configuration::KEY_IGNORE_FRAGMENT_IN_URL_COMPARISON => true,
-        ]);
-
-        $linkChecker = new LinkChecker($configuration, $this->createUrlHealthChecker());
+        $linkChecker = new LinkChecker($this->createUrlHealthChecker());
 
         $linkChecker->getLinkState($url1);
         $linkChecker->getLinkState($url2);
