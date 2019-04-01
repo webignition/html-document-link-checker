@@ -2,7 +2,6 @@
 
 namespace webignition\HtmlDocument\LinkChecker;
 
-use webignition\IgnoredUrlVerifier\IgnoredUrlVerifier;
 use webignition\Uri\Normalizer;
 use webignition\Uri\Uri;
 use webignition\UrlHealthChecker\UrlHealthChecker;
@@ -44,10 +43,6 @@ class LinkChecker
     {
         $comparisonUrl = $this->createComparisonUrl($url);
 
-        if ($this->isUrlExcluded($comparisonUrl)) {
-            return null;
-        }
-
         $hasLinkStateForUrl = isset($this->urlToLinkStateMap[$comparisonUrl]);
 
         if ($hasLinkStateForUrl) {
@@ -79,16 +74,5 @@ class LinkChecker
         $uri = $uri->withFragment('');
 
         return (string) $uri;
-    }
-
-    private function isUrlExcluded(string $url): bool
-    {
-        $ignoredUrlVerifier = new IgnoredUrlVerifier();
-
-        return $ignoredUrlVerifier->isUrlIgnored($url, [
-            IgnoredUrlVerifier::EXCLUSIONS_SCHEMES => $this->configuration->getSchemesToExclude(),
-            IgnoredUrlVerifier::EXCLUSIONS_HOSTS => $this->configuration->getDomainsToExclude(),
-            IgnoredUrlVerifier::EXCLUSIONS_URLS => $this->configuration->getUrlsToExclude(),
-        ]);
     }
 }
