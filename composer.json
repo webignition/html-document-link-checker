@@ -31,8 +31,8 @@
         "php": ">=7.2",
         "guzzlehttp/guzzle":"^6",
         "webignition/html-document-link-finder":">=4,<5",
-        "webignition/url":">=2,<3",
-        "webignition/url-health-checker":"^2"
+        "webignition/url-health-checker":"^2",
+        "webignition/uri": "^0.4.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^7.0",

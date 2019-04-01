@@ -4,8 +4,56 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9b71b612a8020781bd073ffb92cd0d60",
+    "content-hash": "af4944b76787b5856ed5ce00fe39ecd7",
     "packages": [
+        {
+            "name": "algo26-matthias/idna-convert",
+            "version": "v2.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/algo26-matthias/idna-convert.git",
+                "reference": "2717d05713454991936bc581d068c6cea0d84e3b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/algo26-matthias/idna-convert/zipball/2717d05713454991936bc581d068c6cea0d84e3b",
+                "reference": "2717d05713454991936bc581d068c6cea0d84e3b",
+                "shasum": ""
+            },
+            "require": {
+                "ext-pcre": "*",
+                "php": ">=5.6.0"
+            },
+            "suggest": {
+                "ext-iconv": "Install ext/iconv for using input / output other than UTF-8 or ISO-8859-1",
+                "ext-mbstring": "Install ext/mbstring for using input / output other than UTF-8 or ISO-8859-1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Algo26\\IdnaConvert\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-2.1+"
+            ],
+            "authors": [
+                {
+                    "name": "Matthias Sommerfeld",
+                    "email": "matthias.sommerfeld@algo26.de",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A library for encoding and decoding internationalized domain names",
+            "homepage": "http://idnaconv.net/",
+            "keywords": [
+                "idn",
+                "idna",
+                "php"
+            ],
+            "time": "2019-03-04T17:07:46+00:00"
+        },
         {
             "name": "etechnika/idna-convert",
             "version": "1.0.3",
@@ -1035,6 +1083,61 @@
                 "string"
             ],
             "time": "2017-05-11T10:04:12+00:00"
+        },
+        {
+            "name": "webignition/uri",
+            "version": "0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/webignition/uri.git",
+                "reference": "30e72bc41d2c435de9557ac054bfa17a7d08677b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/webignition/uri/zipball/30e72bc41d2c435de9557ac054bfa17a7d08677b",
+                "reference": "30e72bc41d2c435de9557ac054bfa17a7d08677b",
+                "shasum": ""
+            },
+            "require": {
+                "algo26-matthias/idna-convert": "^2",
+                "php": ">=7.2",
+                "psr/http-message": "^1",
+                "xrstf/ip-utils": "v1.0.0"
+            },
+            "require-dev": {
+                "mockery/mockery": "^1",
+                "php-mock/php-mock-mockery": "^1",
+                "phpunit/phpunit": "^7",
+                "squizlabs/php_codesniffer": "3.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "webignition\\Uri\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jon Cram",
+                    "email": "jon@webignition.net"
+                }
+            ],
+            "description": "A PSR-7 UriInterface implementation. A normalizer for applying sixteen lossy and lossless normalizations.",
+            "homepage": "https://github.com/webignition/uri",
+            "keywords": [
+                "normalise",
+                "normaliser",
+                "normalize",
+                "normalizer",
+                "psr-7",
+                "uri",
+                "url"
+            ],
+            "time": "2019-04-01T09:39:51+00:00"
         },
         {
             "name": "webignition/url",
