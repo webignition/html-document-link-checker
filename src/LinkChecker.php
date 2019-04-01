@@ -3,7 +3,8 @@
 namespace webignition\HtmlDocument\LinkChecker;
 
 use GuzzleHttp\Client as HttpClient;
-use webignition\NormalisedUrl\NormalisedUrl;
+use webignition\Uri\Normalizer;
+use webignition\Uri\Uri;
 use webignition\UrlHealthChecker\UrlHealthChecker;
 use webignition\UrlHealthChecker\LinkState;
 
@@ -76,23 +77,26 @@ class LinkChecker
             return $url;
         }
 
-        $urlObject = new NormalisedUrl($url);
-        if (!$urlObject->hasFragment()) {
+        $uri = new Uri($url);
+        $uri = Normalizer::normalize($uri);
+
+        if (empty(trim($uri->getFragment()))) {
             return $url;
         }
 
-        $urlObject->setFragment('');
+        $uri = $uri->withFragment('');
 
-        return (string)$urlObject;
+        return (string) $uri;
     }
 
     private function isUrlToBeIncluded(string $url): bool
     {
-        $urlObject = new NormalisedUrl($url);
+        $uri = new Uri($url);
+        $uri = Normalizer::normalize($uri);
 
-        $isUrlSchemeExcluded = in_array($urlObject->getScheme(), $this->configuration->getSchemesToExclude());
+        $isUrlSchemeExcluded = in_array($uri->getScheme(), $this->configuration->getSchemesToExclude());
         $isUrlExcluded = in_array($url, $this->configuration->getUrlsToExclude());
-        $isUrlDomainExcluded = in_array($urlObject->getHost(), $this->configuration->getDomainsToExclude());
+        $isUrlDomainExcluded = in_array($uri->getHost(), $this->configuration->getDomainsToExclude());
 
         if ($isUrlSchemeExcluded) {
             return false;
